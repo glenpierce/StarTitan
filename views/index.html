@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-<body>
-Welcome to a functioning website hosted on a Node.js server using Express!<br>
-<canvas id="myCanvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
+<body style="background-color:black">
+<br>
+<canvas id="myCanvas" width="1000" height="600" style="border:1px solid #000000;"></canvas>
 <script>
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
-    ctx.beginPath();
-    ctx.arc(95,50,40,0,2*Math.PI);
-    ctx.stroke();
 
     canvas.addEventListener("click", onClick);
     function onClick(event){
@@ -21,11 +18,37 @@ Welcome to a functioning website hosted on a Node.js server using Express!<br>
 
     var exampleSocket = new WebSocket("ws://localhost:3001", "echo-protocol");
     exampleSocket.onopen = function (event) {
-        exampleSocket.send("Message from client: Greetings :)");
+        exampleSocket.send("Map?");
     };
     exampleSocket.onmessage = function (event) {
-        console.log("Message received: " + event.data);
+        if(event.data.toString().substring(2,5) == "MAP") {
+            console.log("Map received: " + event.data);
+            var map = JSON.parse(event.data);
+            console.log(map.MAP.length);
+            for(var i = 0; i < map.MAP.length; i++){
+                if(map.MAP[i].item.type == "star"){
+                    drawStar(map.MAP[i].item.x, map.MAP[i].item.y, map.MAP[i].item.id, ctx);
+                }
+            }
+        }
     };
+
+    function drawStar(x, y, name, context){
+        console.log(name);
+        context.fillStyle="#FFFFFF";
+        context.font = "10px Ariel";
+        context.textAlign = "center";
+        console.log(y);
+        console.log(y);
+        context.fillText(name, x, y);
+        context.beginPath();
+        context.arc(x,y,5,0,2*Math.PI);
+        var gradient=context.createRadialGradient(x,y,2,x,y,5);
+        gradient.addColorStop(0,"white");
+        gradient.addColorStop(1,"black");
+        context.fillStyle=gradient;
+        context.fill();
+    }
 </script>
 </body>
 </html>

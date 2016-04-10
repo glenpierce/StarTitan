@@ -27,6 +27,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
+//game logic
+var mapObj = {
+  MAP:[]
+};
+mapObj.MAP.push({
+  "item": {id: "sol", type: "star", ships: "0", destination: "null", x: "500", y: "200", resourceBase: "10", science: "1", industry: "1", economy: "1", owner: "1"}
+});
+mapObj.MAP.push({
+  "item": {id: "newsol", type: "star", ships: "0", destination: "null", x: "600", y: "300", resourceBase: "10", science: "1", industry: "1", economy: "1", owner: "2"}
+});
+console.log("log");
+console.log(JSON.stringify(mapObj));
+
 var server = http.createServer(function(request, response) {
   console.log((new Date()) + ' Received request for ' + request.url);
   response.writeHead(404);
@@ -59,7 +72,9 @@ wsServer.on('request', function(request) {
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
       console.log('Received Message: ' + message.utf8Data);
-      connection.sendUTF(message.utf8Data);
+      if(message.utf8Data == "Map?") {
+        connection.send(JSON.stringify(mapObj));
+      }
     }
   });
   connection.on('close', function(reasonCode, description) {
