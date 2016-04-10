@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+Welcome to a functioning website hosted on a Node.js server using Express!<br>
+<canvas id="myCanvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    ctx.beginPath();
+    ctx.arc(95,50,40,0,2*Math.PI);
+    ctx.stroke();
+
+    canvas.addEventListener("click", onClick);
+    function onClick(event){
+        exampleSocket.send("click(" + event.x +", "+ event.y +")");
+    }
+
+    var exampleSocket = new WebSocket("ws://localhost:3001", "echo-protocol");
+    exampleSocket.onopen = function (event) {
+        exampleSocket.send("Message from client: Greetings :)");
+    };
+    exampleSocket.onmessage = function (event) {
+        console.log("Message received: " + event.data);
+    };
+</script>
+</body>
+</html>
