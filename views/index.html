@@ -6,10 +6,13 @@
 </head>
 <body style="background-color:black">
 <br>
-<canvas id="myCanvas" width="1000" height="600" style="border:1px solid #000000;"></canvas>
+<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script>
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
+    ctx.font = "10px Arial";
+    ctx.textAlign = "center";
+    var map;
 
     canvas.addEventListener("click", onClick);
     function onClick(event){
@@ -23,31 +26,64 @@
     exampleSocket.onmessage = function (event) {
         if(event.data.toString().substring(2,5) == "MAP") {
             console.log("Map received: " + event.data);
-            var map = JSON.parse(event.data);
+            map = JSON.parse(event.data);
             console.log(map.MAP.length);
             for(var i = 0; i < map.MAP.length; i++){
-                if(map.MAP[i].item.type == "star"){
-                    drawStar(map.MAP[i].item.x, map.MAP[i].item.y, map.MAP[i].item.id, ctx);
+                if(map.MAP[i].i.type == "star"){
+                    drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
+                }
+                if(map.MAP[i].i.type == "ship"){
+                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, ctx)
                 }
             }
         }
     };
 
-    function drawStar(x, y, name, context){
+    function drawStar(x, y, name, science, industry, economy, ships, owner, ctx){
         console.log(name);
-        context.fillStyle="#FFFFFF";
-        context.font = "10px Ariel";
-        context.textAlign = "center";
-        console.log(y);
-        console.log(y);
-        context.fillText(name, x, y);
-        context.beginPath();
-        context.arc(x,y,5,0,2*Math.PI);
-        var gradient=context.createRadialGradient(x,y,2,x,y,5);
+        ctx.fillStyle="#FFFFFF";
+        x = parseInt(x, 10);
+        y = parseInt(y, 10);
+        ctx.fillText(name, x, y + 15);
+        ctx.fillText(economy, x - 7, y - 12);
+        ctx.fillText(industry, x, y - 12);
+        ctx.fillText(science, x + 7, y - 12);
+        ships = parseInt(ships,10);
+        if(ships > 0){
+            ctx.fillText(ships, x, y + 23);
+        }
+        ctx.beginPath();
+        ctx.arc(x,y,5,0,2*Math.PI);
+        var gradient=ctx.createRadialGradient(x,y,2,x,y,5);
         gradient.addColorStop(0,"white");
         gradient.addColorStop(1,"black");
-        context.fillStyle=gradient;
-        context.fill();
+        ctx.fillStyle=gradient;
+        ctx.fill();
+    }
+
+    function drawShip(x, y, ships, destination, owner, ctx){
+        ctx.fillStyle="#FFFFFF";
+        x = parseInt(x, 10);
+        y = parseInt(y, 10);
+        ctx.fillText(ships, x, y + 20);
+        ctx.beginPath();
+        ctx.moveTo(x,y);
+        ctx.lineTo(x-4,y-3);
+        ctx.lineTo(x-4,y+3);
+        ctx.fill();
+        for(i=0; i < map.MAP.length; i++){
+            if(map.MAP[i].i.type=="star"){
+                if(map.MAP[i].i.id == destination){
+                    console.log("course charted from " + x + ", " + y + " to " + map.MAP[i].i.x + ", " + map.MAP[i].i.y);
+                    ctx.strokeStyle="#FFFFFF";
+                    ctx.lineWidth=1;
+                    ctx.beginPath();
+                    ctx.moveTo(x,y);
+                    ctx.lineTo(map.MAP[i].i.x, map.MAP[i].i.y);
+                    ctx.stroke();
+                }
+            }
+        }
     }
 </script>
 </body>
