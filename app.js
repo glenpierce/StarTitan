@@ -27,78 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
-var mapX = 1000;
-var mapY = 600;
-
-//game logic
 var mapObj = {MAP:[]};
-var starNamesList = ["Ain", "Acamar", "Acrux", "Albireo", "Alcor", "Altais", "Betria", "Caph", "Chara", "Dabih",
-                  "Decrux", "Diphda", "Duhr",  "Enif", "Errai", "Furud", "Gatria", "Giedi", "Hadar", "Heka",
-                  "Kajam", "Kastra", "Keid", "Kraz", "Kuma", "Maasym", "Maia", "Markab", "Gemini", "Cetus",
-                  "Corvus", "Naos", "Pherkad", "Polaris", "Pollux", "Rana", "Regor", "Rigel", "Sabik", "Zain"];
-
-for(i=0; i < 4; i++) {
-  switch(i) {
-    case 0:
-      var xMin = 0;
-      var xMax = 500;
-      var yMin = 300;
-      var yMax = 600;
-      break;
-    case 1:
-      var xMin = 500;
-      var xMax = 1000;
-      var yMin = 300;
-      var yMax = 600;
-      break;
-    case 2:
-      var xMin = 0;
-      var xMax = 500;
-      var yMin = 0;
-      var yMax = 300;
-      break;
-    case 3:
-      var xMin = 500;
-      var xMax = 1000;
-      var yMin = 0;
-      var yMax = 300;
-      break;
-  }
-  for (j = 0; j < 10; j++) {
-    var x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
-    var y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
-
-    mapObj.MAP.push({
-      "i": {
-        id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
-        type: "star",
-        ships: "5",
-        destination: "null",
-        x: x,
-        y: y,
-        resourceBase: "10",
-        science: "1",
-        industry: "1",
-        economy: "1",
-        owner: "2"
-      }
-    });
-  }
-}
-
-mapObj.MAP.push({
-  "i": {
-    id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
-    type: "ship",
-    ships: "5",
-    destination: "Duhr",
-    x: 500,
-    y: 200,
-    owner: "2"
-  }
-});
-console.log("log");
-console.log(JSON.stringify(mapObj));
+setupGame(mapObj);
 
 var server = http.createServer(function(request, response) {
   console.log((new Date()) + ' Received request for ' + request.url);
@@ -173,5 +103,74 @@ app.use(function(err, req, res, next) {
   });
 });
 
+function setupGame(mapObj){
+  var starNamesList = ["Ain", "Acamar", "Acrux", "Albireo", "Alcor", "Altais", "Betria", "Caph", "Chara", "Dabih",
+    "Decrux", "Diphda", "Duhr",  "Enif", "Errai", "Furud", "Gatria", "Giedi", "Hadar", "Heka",
+    "Kajam", "Kastra", "Keid", "Kraz", "Kuma", "Maasym", "Maia", "Markab", "Gemini", "Cetus",
+    "Corvus", "Naos", "Pherkad", "Polaris", "Pollux", "Rana", "Regor", "Rigel", "Sabik", "Zain"];
+
+  for(i=0; i < 4; i++) {
+    switch(i) {
+      case 0:
+        var xMin = 10;
+        var xMax = 500;
+        var yMin = 300;
+        var yMax = 600;
+        break;
+      case 1:
+        var xMin = 500;
+        var xMax = 1000;
+        var yMin = 300;
+        var yMax = 600;
+        break;
+      case 2:
+        var xMin = 10;
+        var xMax = 500;
+        var yMin = 10;
+        var yMax = 300;
+        break;
+      case 3:
+        var xMin = 500;
+        var xMax = 1000;
+        var yMin = 10;
+        var yMax = 300;
+        break;
+    }
+    for (j = 0; j < 10; j++) {
+      var x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
+      var y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
+
+      mapObj.MAP.push({
+        "i": {
+          id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
+          type: "star",
+          ships: "5",
+          destination: "null",
+          x: x,
+          y: y,
+          resourceBase: "10",
+          science: "1",
+          industry: "1",
+          economy: "1",
+          owner: i+1
+        }
+      });
+    }
+  }
+
+  mapObj.MAP.push({
+    "i": {
+      id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
+      type: "ship",
+      ships: "5",
+      destination: "Duhr",
+      x: 500,
+      y: 200,
+      owner: "4"
+    }
+  });
+  console.log("log");
+  console.log(JSON.stringify(mapObj));
+}
 
 module.exports = app;
