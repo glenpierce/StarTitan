@@ -59,6 +59,7 @@ wsServer.on('request', function(request) {
   }
 
   var connection = request.accept('echo-protocol', request.origin);
+  global.connection = connection;
   console.log((new Date()) + ' Connection accepted.');
   connection.on('message', function(message) {
     if (message.type === 'utf8') {
@@ -113,9 +114,9 @@ wsServer.on('request', function(request) {
         var ships = parseInt(map.MAP[i].i.ships, 10);
         var industryTech = getIndustryTech(parseInt(map.MAP[i].i.owner));
         map.MAP[i].i.ships = map.MAP[i].i.ships + industry;
-
       }
     }
+    connection.send(JSON.stringify(map));
   }
 
   function getIndustryTech(player) {
