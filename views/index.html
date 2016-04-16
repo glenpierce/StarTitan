@@ -13,10 +13,18 @@
     ctx.font = "10px Arial";
     ctx.textAlign = "center";
     var map;
+    var clickableArea = 20;
 
     canvas.addEventListener("click", onClick);
     function onClick(event){
         exampleSocket.send("click(" + event.x +", "+ event.y +")");
+        for(i=0; i < map.MAP.length; i++){
+            if(map.MAP[i].i.x < event.x + clickableArea && map.MAP[i].i.x > event.x - clickableArea && map.MAP[i].i.y < event.y + clickableArea && map.MAP[i].i.y > event.y -clickableArea){
+                if(map.MAP[i].i.type == "ship"){
+                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, true, ctx)
+                }
+            }
+        }
     }
 
     var exampleSocket = new WebSocket("ws://localhost:3001", "echo-protocol");
@@ -33,7 +41,7 @@
                     drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
                 }
                 if(map.MAP[i].i.type == "ship"){
-                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, ctx)
+                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, false, ctx);
                 }
             }
         }
@@ -53,23 +61,16 @@
         if(ships > 0){
             ctx.fillText(ships, x, y + 23);
         }
-        if(owner > 0){
-            ctx.strokeStyle=getPlayerColor(parseInt(owner, 10));
-            ctx.lineWidth=3;
-            ctx.beginPath();
-            ctx.arc(x,y,7,0,2*Math.PI);
-            ctx.stroke();
-        }
         ctx.beginPath();
-        ctx.arc(x,y,5,0,2*Math.PI);
-        var gradient=ctx.createRadialGradient(x,y,2,x,y,5);
-        gradient.addColorStop(0,"white");
+        ctx.arc(x,y,8,0,2*Math.PI);
+        var gradient=ctx.createRadialGradient(x,y,2,x,y,8);
+        gradient.addColorStop(0,getPlayerColor(parseInt(owner, 10)));
         gradient.addColorStop(1,"black");
         ctx.fillStyle=gradient;
         ctx.fill();
     }
 
-    function drawShip(x, y, ships, destination, owner, ctx){
+    function drawShip(x, y, ships, destination, owner, isSelected, ctx){
         ctx.fillStyle="#FFFFFF";
         x = parseInt(x, 10);
         y = parseInt(y, 10);
@@ -85,7 +86,13 @@
                     console.log("course charted from " + x + ", " + y + " to " + map.MAP[i].i.x + ", " + map.MAP[i].i.y);
                     console.log(getPlayerColor(parseInt(owner, 10)));
                     ctx.strokeStyle=getPlayerColor(parseInt(owner, 10));
-                    ctx.lineWidth=1;
+                    if(isSelected){
+                        ctx.setLineDash([]);
+                        ctx.lineWidth=2;
+                    } else {
+                        ctx.setLineDash([2, 2]);
+                        ctx.lineWidth=1;
+                    }
                     ctx.beginPath();
                     ctx.moveTo(x,y);
                     ctx.lineTo(map.MAP[i].i.x, map.MAP[i].i.y);
@@ -97,6 +104,8 @@
 
     function getPlayerColor(player){
         switch(player) {
+            case 0:
+                return "#FFFFFF";
             case 1:
                 return "#8EB9FE"; //blue
             case 2:
