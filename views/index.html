@@ -36,6 +36,7 @@
             console.log("Map received: " + event.data);
             map = JSON.parse(event.data);
             console.log(map.MAP.length);
+            clearMap(canvas, ctx);
             for(var i = 0; i < map.MAP.length; i++){
                 if(map.MAP[i].i.type == "star"){
                     drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
@@ -100,6 +101,11 @@
                 }
             }
         }
+    }
+
+    function clearMap(canvas, ctx){
+        ctx.fillStyle="black";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
     }
 
     function getPlayerColor(player){

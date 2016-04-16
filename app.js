@@ -113,10 +113,10 @@ wsServer.on('request', function(request) {
         var industry = parseInt(map.MAP[i].i.industry, 10);
         var ships = parseInt(map.MAP[i].i.ships, 10);
         var industryTech = getIndustryTech(parseInt(map.MAP[i].i.owner));
-        map.MAP[i].i.ships = map.MAP[i].i.ships + industry;
+        map.MAP[i].i.ships = ships + industry;
       }
     }
-    connection.send(JSON.stringify(map));
+    global.connection.send(JSON.stringify(map));
   }
 
   function getIndustryTech(player) {
