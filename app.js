@@ -28,6 +28,8 @@ app.use('/', routes);
 app.use('/users', users);
 
 var map = {MAP:[]};
+var shipSpeed = 20;
+var gameSpeed = 1000;
 var players = [];
 setupGame(map);
 
@@ -105,7 +107,7 @@ wsServer.on('request', function(request) {
     });
   });
 
-  setInterval(gameLoop, 6000);
+  setInterval(gameLoop, gameSpeed);
 
   function gameLoop() {
     for (i = 0; i < map.MAP.length; i++) {
@@ -115,8 +117,66 @@ wsServer.on('request', function(request) {
         var industryTech = getIndustryTech(parseInt(map.MAP[i].i.owner));
         map.MAP[i].i.ships = ships + industry;
       }
-    }
+      if (map.MAP[i].i.type == "ship") {
+        if(map.MAP[i].i.destination != "null") {
+          var shipX = parseInt(map.MAP[i].i.x, 10);
+          var shipY = parseInt(map.MAP[i].i.y, 10);
+          var destinationX = 0;
+          var destinationY = 0;
+          var starIndex = -1;
+          for (var j = 0; j < map.MAP.length; j++) {
+            if (map.MAP[j].i.id == map.MAP[i].i.destination) {
+              destinationX = parseInt(map.MAP[j].i.x, 10);
+              destinationY = parseInt(map.MAP[j].i.y, 10);
+              starIndex = j;
+              j = map.MAP.length;
+            }
+          }
+          console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
+          if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= shipSpeed) {
+            if (starIndex != -1) {
+              map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
+              map.MAP.splice(i, 1);
+            }
+          } else {
+              if (shipX > destinationX && shipY > destinationY) {
+                var angle = Math.atan((shipX - destinationX) / (shipY - destinationY));
+                map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
+                map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
+              } else if (shipX > destinationX && shipY < destinationY) {
+                var angle = Math.atan((shipX - destinationX) / (destinationY - shipY));
+                map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
+                map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
+              } else if (shipX < destinationX && shipY > destinationY) {
+                var angle = Math.atan((shipY - destinationY) / (destinationX - shipX));
+                map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
+                map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
+              } else if (shipX < destinationX && shipY < destinationY) {
+                var angle = Math.atan((destinationY - shipY) / (destinationX - shipX));
+                map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
+                map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
+              } else if (shipX == destinationX) {
+                if (shipY > destinationY) {
+                  map.MAP[i].i.y = shipY - shipSpeed;
+                } else {
+                  map.MAP[i].i.y = shipY + shipSpeed;
+                }
+              } else if (shipY == destinationY) {
+                if (shipX > destinationX) {
+                  map.MAP[i].i.x = shipX - shipSpeed;
+                } else {
+                  map.MAP[i].i.x = shipX + shipSpeed;
+                }
+              }
+            }
+          }
+        }
+      }
     global.connection.send(JSON.stringify(map));
+  }
+
+  function getDistancebetween(x0, y0, x1, y1){
+    return Math.hypot((x0-x1), (y0-y1));
   }
 
   function getIndustryTech(player) {
@@ -180,16 +240,68 @@ wsServer.on('request', function(request) {
 
     map.MAP.push({
       "i": {
-        id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
+        id: "ship",
         type: "ship",
         ships: "5",
-        destination: "Duhr",
+        destination: "Orion",
+        x: 200,
+        y: 200,
+        owner: "4"
+      }
+    });
+
+    map.MAP.push({
+      "i": {
+        id: "ship",
+        type: "ship",
+        ships: "5",
+        destination: "Orion",
+        x: 500,
+        y: 500,
+        owner: "4"
+      }
+    });
+
+    map.MAP.push({
+      "i": {
+        id: "ship",
+        type: "ship",
+        ships: "5",
+        destination: "Orion",
+        x: 200,
+        y: 500,
+        owner: "4"
+      }
+    });
+
+    map.MAP.push({
+      "i": {
+        id: "ship",
+        type: "ship",
+        ships: "5",
+        destination: "Orion",
         x: 500,
         y: 200,
         owner: "4"
       }
     });
-    console.log("log");
+
+    map.MAP.push({
+      "i": {
+        id: "Orion",
+        type: "star",
+        ships: "5",
+        destination: "null",
+        x: 300,
+        y: 300,
+        resourceBase: "10",
+        science: "1",
+        industry: "1",
+        economy: "1",
+        owner: 0
+      }
+    });
+
     console.log(JSON.stringify(map));
   }
 
