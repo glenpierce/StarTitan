@@ -32,6 +32,7 @@ var shipSpeed = 20;
 var gameSpeed = 1000;
 var players = [];
 setupGame(map);
+var gameOn = false;
 
 var server = http.createServer(function(request, response) {
   console.log((new Date()) + ' Received request for ' + request.url);
@@ -67,6 +68,7 @@ wsServer.on('request', function(request) {
     if (message.type === 'utf8') {
       console.log('Received Message: ' + message.utf8Data);
       if(message.utf8Data == "Map?") {
+        gameOn = true;
         connection.send(JSON.stringify(map));
       }
     }
@@ -110,6 +112,9 @@ wsServer.on('request', function(request) {
   setInterval(gameLoop, gameSpeed);
 
   function gameLoop() {
+    if(!gameOn){
+      return;
+    }
     for (i = 0; i < map.MAP.length; i++) {
       if (map.MAP[i].i.type == "star") {
         var industry = parseInt(map.MAP[i].i.industry, 10);
@@ -147,8 +152,8 @@ wsServer.on('request', function(request) {
                 var angle = Math.atan((shipX - destinationX) / (destinationY - shipY));
                 map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
                 map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
-              } else if (shipX < destinationX && shipY > destinationY) {
-                var angle = Math.atan((shipY - destinationY) / (destinationX - shipX));
+              } else if (shipX < destinationX && shipY > destinationY) { //this is wrong somewhere
+                var angle = Math.atan((destinationX - shipX) / (shipY - destinationY));
                 map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
                 map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
               } else if (shipX < destinationX && shipY < destinationY) {
