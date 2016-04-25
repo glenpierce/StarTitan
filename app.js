@@ -237,7 +237,7 @@ wsServer.on('request', function(request) {
             science: "1",
             industry: "1",
             economy: "1",
-            owner: i + 1
+            owner: i
           }
         });
       }

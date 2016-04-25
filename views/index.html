@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Star Titans</title>
 </head>
 <body style="background-color:black">
 <br>
+<div id="selectionPanel"></div>
 <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script>
     var canvas = document.getElementById("myCanvas");
@@ -15,13 +16,29 @@
     var map;
     var clickableArea = 20;
 
+//    var avgWhiteStar =  new Image();
+//    avgWhiteStar.src = "images/averstarwhite.png"
+
+    var selectionPanel = document.getElementById("selectionPanel");
+
     canvas.addEventListener("click", onClick);
     function onClick(event){
-        exampleSocket.send("click(" + event.x +", "+ event.y +")");
+        var canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
+        var canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+        exampleSocket.send("click(" + canvasX +", "+ canvasY +")");
         for(i=0; i < map.MAP.length; i++){
-            if(map.MAP[i].i.x < event.x + clickableArea && map.MAP[i].i.x > event.x - clickableArea && map.MAP[i].i.y < event.y + clickableArea && map.MAP[i].i.y > event.y -clickableArea){
+            if(map.MAP[i].i.x < canvasX + clickableArea && map.MAP[i].i.x > canvasX - clickableArea && map.MAP[i].i.y < canvasY + clickableArea && map.MAP[i].i.y > canvasY - clickableArea){
                 if(map.MAP[i].i.type == "ship"){
-                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, true, ctx)
+                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, true, ctx);
+                } else if(map.MAP[i].i.type == "star"){
+                    var selection = document.createElement('input');
+                    selection.type = "text";
+                    selection.value = "star selected = " + map.MAP[i].i.id;
+                    selectionPanel.appendChild(selection);
+                } else {
+                    while (selectionPanel.firstChild) {
+                        selectionPanel.removeChild(selectionPanel.firstChild);
+                    }
                 }
             }
         }
@@ -62,13 +79,17 @@
         if(ships > 0){
             ctx.fillText(ships, x, y + 23);
         }
-        ctx.beginPath();
-        ctx.arc(x,y,8,0,2*Math.PI);
-        var gradient=ctx.createRadialGradient(x,y,2,x,y,8);
-        gradient.addColorStop(0,getPlayerColor(parseInt(owner, 10)));
-        gradient.addColorStop(1,"black");
-        ctx.fillStyle=gradient;
-        ctx.fill();
+//        if(owner == 0){
+//            ctx.drawImage(avgWhiteStar, x, y);
+//        } else {
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI);
+            var gradient = ctx.createRadialGradient(x, y, 2, x, y, 8);
+            gradient.addColorStop(0, getPlayerColor(parseInt(owner, 10)));
+            gradient.addColorStop(1, "black");
+            ctx.fillStyle = gradient;
+            ctx.fill();
+//        }
     }
 
     function drawShip(x, y, ships, destination, owner, isSelected, ctx){
