@@ -70,6 +70,9 @@ wsServer.on('request', function(request) {
       if(message.utf8Data == "Map?") {
         gameOn = true;
         connection.send(JSON.stringify(map));
+      } else if(message.utf8Data.substr(0,1) != "c"){
+        var order = JSON.parse(message.utf8Data);
+        console.log(JSON.stringify(order));
       }
     }
   });
