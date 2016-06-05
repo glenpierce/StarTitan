@@ -71,8 +71,11 @@ wsServer.on('request', function(request) {
         gameOn = true;
         connection.send(JSON.stringify(map));
       } else if(message.utf8Data.substr(0,1) != "c"){
-        var order = JSON.parse(message.utf8Data);
+        var order = {order:[]};
+        order = JSON.parse(message.utf8Data);
         console.log(JSON.stringify(order));
+        console.log(order.order[0].id);
+        dispatchOrder(order);
       }
     }
   });
@@ -237,9 +240,9 @@ wsServer.on('request', function(request) {
             x: x,
             y: y,
             resourceBase: "10",
-            science: "1",
-            industry: "1",
-            economy: "1",
+            science: 1,
+            industry: 1,
+            economy: 1,
             owner: i
           }
         });
@@ -250,7 +253,7 @@ wsServer.on('request', function(request) {
       "i": {
         id: "ship",
         type: "ship",
-        ships: "5",
+        ships: 5,
         destination: "Orion",
         x: 200,
         y: 200,
@@ -262,7 +265,7 @@ wsServer.on('request', function(request) {
       "i": {
         id: "ship",
         type: "ship",
-        ships: "5",
+        ships: 5,
         destination: "Orion",
         x: 500,
         y: 500,
@@ -274,7 +277,7 @@ wsServer.on('request', function(request) {
       "i": {
         id: "ship",
         type: "ship",
-        ships: "5",
+        ships: 5,
         destination: "Orion",
         x: 200,
         y: 500,
@@ -286,7 +289,7 @@ wsServer.on('request', function(request) {
       "i": {
         id: "ship",
         type: "ship",
-        ships: "5",
+        ships: 5,
         destination: "Orion",
         x: 500,
         y: 200,
@@ -298,7 +301,7 @@ wsServer.on('request', function(request) {
       "i": {
         id: "Orion",
         type: "star",
-        ships: "5",
+        ships: 5,
         destination: "null",
         x: 300,
         y: 300,
@@ -311,6 +314,45 @@ wsServer.on('request', function(request) {
     });
 
     console.log(JSON.stringify(map));
+  }
+
+  function dispatchOrder(order){
+    if(order.order[0].type == "increment"){
+      if(order.order[0].industry == "1"){
+        incrementIndustryServer(order);
+      } else if(order.order[0].science == "1"){
+        incrementScienceServer(order);
+      } else if(order.order[0].economy == "1"){
+        incrementEconomyServer(order);
+      }
+    }
+  }
+
+  function incrementIndustryServer(order){
+    for(i=0; i < map.MAP.length; i++) {
+      if(map.MAP[i].i.id == order.order[0].id){
+        map.MAP[i].i.industry = parseInt(map.MAP[i].i.industry, 10) + 1;
+        break;
+      }
+    }
+  }
+
+  function incrementScienceServer(order){
+    for(i=0; i < map.MAP.length; i++) {
+      if(map.MAP[i].i.id == order.order[0].id){
+        map.MAP[i].i.science = parseInt(map.MAP[i].i.science, 10) + 1;
+        break;
+      }
+    }
+  }
+
+  function incrementEconomyServer(order){
+    for(i=0; i < map.MAP.length; i++) {
+      if(map.MAP[i].i.id == order.order[0].id){
+        map.MAP[i].i.economy = parseInt(map.MAP[i].i.economy, 10) + 1;
+        break;
+      }
+    }
   }
 
   module.exports = app;

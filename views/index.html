@@ -66,7 +66,9 @@
                     selectionPanel.appendChild(selectedStar);
                     selectedStarName.setAttribute("style","width:94px");
 
-                    selectedStarIndustry.addEventListener("click", function(){incrementIndustry(selectedStarName.value, selectedStarIndustry, selectedStarIndustryValue)});
+                    selectedStarIndustry.addEventListener("click", function(){incrementIndustry(selectedStarName.value, selectedStarIndustry)});
+                    selectedStarScience.addEventListener("click", function(){incrementScience(selectedStarName.value, selectedStarScience)});
+                    selectedStarEconomy.addEventListener("click", function(){incrementEconomy(selectedStarName.value, selectedStarEconomy)});
                 }
             }
         }
@@ -84,19 +86,11 @@
     exampleSocket.onmessage = function (event) {
         if(event.data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(event.data);
-            clearMap(canvas, ctx);
-            for(var i = 0; i < map.MAP.length; i++){
-                if(map.MAP[i].i.type == "star"){
-                    drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
-                }
-                if(map.MAP[i].i.type == "ship"){
-                    drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, false, ctx);
-                }
-            }
+            drawMap();
         }
     };
 
-    function incrementIndustry(starName, selectedStarIndustry, selectedStarIndustryValue){
+    function incrementIndustry(starName, selectedStarIndustry){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
                 map.MAP[i].i.industry += 1;
@@ -115,6 +109,67 @@
                 });
                 exampleSocket.send(JSON.stringify(order));
                 break;
+            }
+        }
+        drawMap();
+    }
+
+    function incrementScience(starName, selectedStarScience){
+        for(i=0; i < map.MAP.length; i++) {
+            if(map.MAP[i].i.id == starName){
+                map.MAP[i].i.science += 1;
+                selectedStarScience.innerHTML = map.MAP[i].i.science;
+                console.log("increment science" + starName);
+                var order = {order:[]};
+                order.order.push({
+                    id: starName,
+                    type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                    ships: "0",
+                    destination: "null",
+                    science: "1",
+                    industry: "0",
+                    economy: "0",
+                    owner: "me"
+                });
+                exampleSocket.send(JSON.stringify(order));
+                break;
+            }
+        }
+        drawMap();
+    }
+
+    function incrementEconomy(starName, selectedStarEconomy){
+        for(i=0; i < map.MAP.length; i++) {
+            if(map.MAP[i].i.id == starName){
+                map.MAP[i].i.economy += 1;
+                selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
+                console.log("increment economy" + starName);
+                var order = {order:[]};
+                order.order.push({
+                    id: starName,
+                    type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                    ships: "0",
+                    destination: "null",
+                    science: "0",
+                    industry: "0",
+                    economy: "1",
+                    owner: "me"
+                });
+                exampleSocket.send(JSON.stringify(order));
+                break;
+            }
+        }
+        drawMap();
+    }
+
+    function drawMap(){
+        clearMap(canvas, ctx);
+        for(var i = 0; i < map.MAP.length; i++){
+            if(map.MAP[i].i.type == "star"){
+                drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
+            }
+            if(map.MAP[i].i.type == "ship"){
+                drawShip(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.ships, map.MAP[i].i.destination, map.MAP[i].i.owner, false, ctx);
             }
         }
     }
