@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Star Titans</title>
+    <title>Star Titan</title>
 </head>
 <body style="background-color:black">
 <br>
-<div id="selectionPanel" style="border:1px solid #BBBBBB; width:100px; height:650px; position: fixed;"></div>
-<div id="infoPanel" style="position: fixed;"></div>
+<div id="selectionPanel" style="width:100px; position: fixed;"></div>
+<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;"></div>
+<div id="playerData"></div>
 <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script>
     var canvas = document.getElementById("myCanvas");
@@ -18,6 +19,7 @@
     var clickableArea = 20;
 
     var selectionPanel = document.getElementById("selectionPanel");
+    var infoPanel = document.getElementById("infoPanel");
 
 //    var avgWhiteStar =  new Image();
 //    avgWhiteStar.src = "images/averstarwhite.png"
@@ -43,25 +45,24 @@
                     var selectedStarName = document.createElement('input');
                     selectedStarName.type = "text";
                     selectedStarName.value = map.MAP[i].i.id;
-                    var selectedStarIndustry = document.createElement('button');
-                    selectedStarIndustry.type = "button";
-                    var selectedStarIndustryValue = parseInt(map.MAP[i].i.industry, 10);
-                    selectedStarIndustry.innerHTML = selectedStarIndustryValue;
-                    var selectedStarScience = document.createElement('button');
-                    selectedStarScience.type = "button";
-                    selectedStarScience.innerHTML = map.MAP[i].i.science;
                     var selectedStarEconomy = document.createElement('button');
                     selectedStarEconomy.type = "button";
                     selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
+                    var selectedStarIndustry = document.createElement('button');
+                    selectedStarIndustry.type = "button";
+                    selectedStarIndustry.innerHTML = map.MAP[i].i.industry;
+                    var selectedStarScience = document.createElement('button');
+                    selectedStarScience.type = "button";
+                    selectedStarScience.innerHTML = map.MAP[i].i.science;
                     var selectedStarShips = document.createElement('button');
                     selectedStarShips.type = "button";
                     selectedStarShips.innerHTML = map.MAP[i].i.ships;
 
                     var selectedStar = document.createElement('div');
                     selectedStar.appendChild(selectedStarName);
+                    selectedStar.appendChild(selectedStarEconomy);
                     selectedStar.appendChild(selectedStarIndustry);
                     selectedStar.appendChild(selectedStarScience);
-                    selectedStar.appendChild(selectedStarEconomy);
                     selectedStar.appendChild(selectedStarShips);
                     selectionPanel.appendChild(selectedStar);
                     selectedStarName.setAttribute("style","width:94px");
@@ -69,6 +70,8 @@
                     selectedStarIndustry.addEventListener("click", function(){incrementIndustry(selectedStarName.value, selectedStarIndustry)});
                     selectedStarScience.addEventListener("click", function(){incrementScience(selectedStarName.value, selectedStarScience)});
                     selectedStarEconomy.addEventListener("click", function(){incrementEconomy(selectedStarName.value, selectedStarEconomy)});
+
+                    selectedStarShips.addEventListener("click", function(){transmitShipOrders(selectedStarName.value)});
                 }
             }
         }
@@ -90,24 +93,39 @@
         }
     };
 
+    function transmitShipOrders(originStarName){
+//        map.MAP.push({
+//          "i": {
+//            id: "ship",
+//            type: "ship",
+//            ships: 5,
+//            destination: "Orion",
+//            x: originX,
+//            y: originY,
+//            owner: "4"
+//          }
+//        });
+    }
+
     function incrementIndustry(starName, selectedStarIndustry){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                map.MAP[i].i.industry += 1;
-                selectedStarIndustry.innerHTML = map.MAP[i].i.industry;
-                console.log("increment industry" + starName);
-                var order = {order:[]};
-                order.order.push({
-                    id: starName,
-                    type: "increment", //change research target, transmit ship orders, send player message/credits/tech
-                    ships: "0",
-                    destination: "null",
-                    science: "0",
-                    industry: "1",
-                    economy: "0",
-                    owner: "me"
-                });
-                exampleSocket.send(JSON.stringify(order));
+                var owner = parseInt(map.MAP[i].i.owner);
+                if(map.PlayerData[owner].i.credits >= map.MAP[i].i.industry) {
+                    map.PlayerData[owner].i.credits -= map.MAP[i].i.industry;
+                    map.MAP[i].i.industry += 1;
+                    selectedStarIndustry.innerHTML = map.MAP[i].i.industry;
+                    console.log("increment industry" + starName);
+                    var order = {order: []};
+                    order.order.push({
+                        id: starName,
+                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        science: "0",
+                        industry: "1",
+                        economy: "0",
+                    });
+                    exampleSocket.send(JSON.stringify(order));
+                }
                 break;
             }
         }
@@ -117,21 +135,22 @@
     function incrementScience(starName, selectedStarScience){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                map.MAP[i].i.science += 1;
-                selectedStarScience.innerHTML = map.MAP[i].i.science;
-                console.log("increment science" + starName);
-                var order = {order:[]};
-                order.order.push({
-                    id: starName,
-                    type: "increment", //change research target, transmit ship orders, send player message/credits/tech
-                    ships: "0",
-                    destination: "null",
-                    science: "1",
-                    industry: "0",
-                    economy: "0",
-                    owner: "me"
-                });
-                exampleSocket.send(JSON.stringify(order));
+                var owner = parseInt(map.MAP[i].i.owner);
+                if(map.PlayerData[owner].i.credits >= map.MAP[i].i.science) {
+                    map.PlayerData[owner].i.credits -= map.MAP[i].i.science;
+                    map.MAP[i].i.science += 1;
+                    selectedStarScience.innerHTML = map.MAP[i].i.science;
+                    console.log("increment science" + starName);
+                    var order = {order: []};
+                    order.order.push({
+                        id: starName,
+                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        science: "1",
+                        industry: "0",
+                        economy: "0"
+                    });
+                    exampleSocket.send(JSON.stringify(order));
+                }
                 break;
             }
         }
@@ -141,29 +160,38 @@
     function incrementEconomy(starName, selectedStarEconomy){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                map.MAP[i].i.economy += 1;
-                selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
-                console.log("increment economy" + starName);
-                var order = {order:[]};
-                order.order.push({
-                    id: starName,
-                    type: "increment", //change research target, transmit ship orders, send player message/credits/tech
-                    ships: "0",
-                    destination: "null",
-                    science: "0",
-                    industry: "0",
-                    economy: "1",
-                    owner: "me"
-                });
-                exampleSocket.send(JSON.stringify(order));
+                var owner = parseInt(map.MAP[i].i.owner);
+                if(map.PlayerData[owner].i.credits >= map.MAP[i].i.economy) {
+                    map.PlayerData[owner].i.credits -= map.MAP[i].i.economy;
+                    map.MAP[i].i.economy += 1;
+                    selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
+                    console.log("increment economy" + starName);
+                    var order = {order: []};
+                    order.order.push({
+                        id: starName,
+                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        science: "0",
+                        industry: "0",
+                        economy: "1"
+                    });
+                    exampleSocket.send(JSON.stringify(order));
+                }
                 break;
             }
         }
         drawMap();
     }
 
-    function drawMap(){
+    function drawMap() {
         clearMap(canvas, ctx);
+        while (infoPanel.hasChildNodes()) {
+            infoPanel.removeChild(infoPanel.lastChild);
+        }
+        for (var i = 0; i < map.PlayerData.length; i++) {
+            var playerInfo = document.createElement('div');
+            playerInfo.innerHTML="player: " + i + ":" + map.PlayerData[i].i.credits + " weapons: " + map.PlayerData[i].i.weapons + " defense: " + map.PlayerData[i].i.defense + " terraforming: " + map.PlayerData[i].i.terraforming + " manufacturing: " + map.PlayerData[i].i.manufacturing + " range: " + map.PlayerData[i].i.range;
+            infoPanel.appendChild(playerInfo);
+        }
         for(var i = 0; i < map.MAP.length; i++){
             if(map.MAP[i].i.type == "star"){
                 drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);

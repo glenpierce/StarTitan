@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 
-var map = {MAP:[]};
+var map = {MAP:[],PlayerData:[]};
 var shipSpeed = 20;
 var gameSpeed = 1000;
 var players = [];
@@ -125,8 +125,10 @@ wsServer.on('request', function(request) {
       if (map.MAP[i].i.type == "star") {
         var industry = parseInt(map.MAP[i].i.industry, 10);
         var ships = parseInt(map.MAP[i].i.ships, 10);
-        var industryTech = getIndustryTech(parseInt(map.MAP[i].i.owner));
-        map.MAP[i].i.ships = ships + industry;
+        var owner = parseInt(map.MAP[i].i.owner);
+        var manufacturingTech = getManufacturingTech(owner);
+        map.MAP[i].i.ships = ships + industry * manufacturingTech;
+        map.PlayerData[owner].i.credits = parseInt(map.MAP[i].i.economy) + parseInt(map.PlayerData[owner].i.credits);
       }
       if (map.MAP[i].i.type == "ship") {
         if(map.MAP[i].i.destination != "null") {
@@ -190,8 +192,12 @@ wsServer.on('request', function(request) {
     return Math.hypot((x0-x1), (y0-y1));
   }
 
-  function getIndustryTech(player) {
-
+  function getManufacturingTech(player) {
+    for(var i = 0; i < map.PlayerData.length; i++){
+      if(player == parseInt(map.PlayerData[i].i.id, 10)){
+        return parseInt(map.PlayerData[i].i.manufacturing, 10);
+      }
+    }
   }
 
   function setupGame(map) {
@@ -249,69 +255,84 @@ wsServer.on('request', function(request) {
       }
     }
 
-    map.MAP.push({
-      "i": {
-        id: "ship",
-        type: "ship",
-        ships: 5,
-        destination: "Orion",
-        x: 200,
-        y: 200,
-        owner: "4"
-      }
-    });
+    //map.MAP.push({
+    //  "i": {
+    //    id: "ship",
+    //    type: "ship",
+    //    ships: 5,
+    //    destination: "Orion",
+    //    x: 200,
+    //    y: 200,
+    //    owner: "4"
+    //  }
+    //});
+    //
+    //map.MAP.push({
+    //  "i": {
+    //    id: "ship",
+    //    type: "ship",
+    //    ships: 5,
+    //    destination: "Orion",
+    //    x: 500,
+    //    y: 500,
+    //    owner: "4"
+    //  }
+    //});
+    //
+    //map.MAP.push({
+    //  "i": {
+    //    id: "ship",
+    //    type: "ship",
+    //    ships: 5,
+    //    destination: "Orion",
+    //    x: 200,
+    //    y: 500,
+    //    owner: "4"
+    //  }
+    //});
+    //
+    //map.MAP.push({
+    //  "i": {
+    //    id: "ship",
+    //    type: "ship",
+    //    ships: 5,
+    //    destination: "Orion",
+    //    x: 500,
+    //    y: 200,
+    //    owner: "4"
+    //  }
+    //});
+    //
+    //map.MAP.push({
+    //  "i": {
+    //    id: "Orion",
+    //    type: "star",
+    //    ships: 5,
+    //    destination: "null",
+    //    x: 300,
+    //    y: 300,
+    //    resourceBase: "10",
+    //    science: "1",
+    //    industry: "1",
+    //    economy: "1",
+    //    owner: 0
+    //  }
+    //});
 
-    map.MAP.push({
-      "i": {
-        id: "ship",
-        type: "ship",
-        ships: 5,
-        destination: "Orion",
-        x: 500,
-        y: 500,
-        owner: "4"
-      }
-    });
-
-    map.MAP.push({
-      "i": {
-        id: "ship",
-        type: "ship",
-        ships: 5,
-        destination: "Orion",
-        x: 200,
-        y: 500,
-        owner: "4"
-      }
-    });
-
-    map.MAP.push({
-      "i": {
-        id: "ship",
-        type: "ship",
-        ships: 5,
-        destination: "Orion",
-        x: 500,
-        y: 200,
-        owner: "4"
-      }
-    });
-
-    map.MAP.push({
-      "i": {
-        id: "Orion",
-        type: "star",
-        ships: 5,
-        destination: "null",
-        x: 300,
-        y: 300,
-        resourceBase: "10",
-        science: "1",
-        industry: "1",
-        economy: "1",
-        owner: 0
-      }
-    });
+    for(var i = 0; i < 5; i++)
+    {
+      map.PlayerData.push({
+        "i": {
+          id: i,
+          credits: 0,
+          range: 1,
+          weapons: 1,
+          defense: 1,
+          terraforming: 1,
+          manufacturing: 1
+        }
+      });
+    }
 
     console.log(JSON.stringify(map));
   }
@@ -331,7 +352,11 @@ wsServer.on('request', function(request) {
   function incrementIndustryServer(order){
     for(i=0; i < map.MAP.length; i++) {
       if(map.MAP[i].i.id == order.order[0].id){
-        map.MAP[i].i.industry = parseInt(map.MAP[i].i.industry, 10) + 1;
+        var owner = parseInt(map.MAP[i].i.owner);
+        if(map.PlayerData[owner].i.credits >= map.MAP[i].i.industry) {
+          map.PlayerData[owner].i.credits -= map.MAP[i].i.industry;
+          map.MAP[i].i.industry = parseInt(map.MAP[i].i.industry, 10) + 1;
+        }
         break;
       }
     }
@@ -340,7 +365,11 @@ wsServer.on('request', function(request) {
   function incrementScienceServer(order){
     for(i=0; i < map.MAP.length; i++) {
       if(map.MAP[i].i.id == order.order[0].id){
-        map.MAP[i].i.science = parseInt(map.MAP[i].i.science, 10) + 1;
+        var owner = parseInt(map.MAP[i].i.owner);
+        if(map.PlayerData[owner].i.credits >= map.MAP[i].i.science) {
+          map.PlayerData[owner].i.credits -= map.MAP[i].i.science;
+          map.MAP[i].i.science = parseInt(map.MAP[i].i.science, 10) + 1;
+        }
         break;
       }
     }
@@ -349,7 +378,11 @@ wsServer.on('request', function(request) {
   function incrementEconomyServer(order){
     for(i=0; i < map.MAP.length; i++) {
       if(map.MAP[i].i.id == order.order[0].id){
-        map.MAP[i].i.economy = parseInt(map.MAP[i].i.economy, 10) + 1;
+        var owner = parseInt(map.MAP[i].i.owner);
+        if(map.PlayerData[owner].i.credits >= map.MAP[i].i.economy) {
+          map.PlayerData[owner].i.credits -= map.MAP[i].i.economy;
+          map.MAP[i].i.economy = parseInt(map.MAP[i].i.economy, 10) + 1;
+        }
         break;
       }
     }
