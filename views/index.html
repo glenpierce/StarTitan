@@ -71,7 +71,7 @@
                     selectedStarScience.addEventListener("click", function(){incrementScience(selectedStarName.value, selectedStarScience)});
                     selectedStarEconomy.addEventListener("click", function(){incrementEconomy(selectedStarName.value, selectedStarEconomy)});
 
-                    selectedStarShips.addEventListener("click", function(){transmitShipOrders(selectedStarName.value)});
+                    selectedStarShips.addEventListener("click", function(){openTransmitShipOrders(selectedStarName.value)});
                 }
             }
         }
@@ -93,18 +93,32 @@
         }
     };
 
-    function transmitShipOrders(originStarName){
-//        map.MAP.push({
-//          "i": {
-//            id: "ship",
-//            type: "ship",
-//            ships: 5,
-//            destination: "Orion",
-//            x: originX,
-//            y: originY,
-//            owner: "4"
-//          }
-//        });
+    function openTransmitShipOrders(originStarName){
+        var x = 0;
+        var y = 0;
+        for(var i=0; i < map.MAP.length; i++){
+            if(map.MAP[i].i.type == "star"){
+                if(map.MAP[i].i.id == originStarName){
+                    x = map.MAP[i].i.x;
+                    y= map.MAP[i].i.y;
+                    break;
+                }
+            }
+        }
+        transmitShipOrders(originStarName, x, y, "Orion", 1);
+    }
+
+    function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips){
+        var order = {order: []};
+        order.order.push({
+            origin: originStarName,
+            x: x,
+            y: y,
+            type: "shipOrder", //change research target, transmit ship orders, send player message/credits/tech
+            destination: destinationStarName,
+            numberOfShips: numberOfShips
+        });
+        exampleSocket.send(JSON.stringify(order));
     }
 
     function incrementIndustry(starName, selectedStarIndustry){

@@ -303,21 +303,21 @@ wsServer.on('request', function(request) {
     //  }
     //});
     //
-    //map.MAP.push({
-    //  "i": {
-    //    id: "Orion",
-    //    type: "star",
-    //    ships: 5,
-    //    destination: "null",
-    //    x: 300,
-    //    y: 300,
-    //    resourceBase: "10",
-    //    science: "1",
-    //    industry: "1",
-    //    economy: "1",
-    //    owner: 0
-    //  }
-    //});
+    map.MAP.push({
+      "i": {
+        id: "Orion",
+        type: "star",
+        ships: 5,
+        destination: "null",
+        x: 300,
+        y: 300,
+        resourceBase: "10",
+        science: "1",
+        industry: "1",
+        economy: "1",
+        owner: 0
+      }
+    });
 
     for(var i = 0; i < 5; i++)
     {
@@ -346,7 +346,22 @@ wsServer.on('request', function(request) {
       } else if(order.order[0].economy == "1"){
         incrementEconomyServer(order);
       }
+    } else if(order.order[0].type == "shipOrder"){
+      transmitShipOrdersServer(order);
     }
+  }
+
+  function transmitShipOrdersServer(order){
+    map.MAP.push({
+      "i": {
+        type: "ship",
+        ships: order.order[0].numberOfShips,
+        destination: order.order[0].destination,
+        x: order.order[0].x,
+        y: order.order[0].y,
+        owner: 0
+      }
+    });
   }
 
   function incrementIndustryServer(order){
