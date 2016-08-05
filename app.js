@@ -356,7 +356,7 @@ wsServer.on('request', function(request) {
       "i": {
         type: "ship",
         ships: order.order[0].numberOfShips,
-        destination: order.order[0].destination,
+        destination: order.order[0].destination[0],
         x: order.order[0].x,
         y: order.order[0].y,
         owner: 0

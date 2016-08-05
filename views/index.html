@@ -105,7 +105,27 @@
                 }
             }
         }
-        transmitShipOrders(originStarName, x, y, "Orion", 1);
+        canvas.onclick = onClick2;
+            function onClick2(event){
+                var destinationStarName = "";
+                var numberOfShips = 1;
+
+                var canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
+                var canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+                for(i=0; i < map.MAP.length; i++) {
+                    if (map.MAP[i].i.x < canvasX + clickableArea && map.MAP[i].i.x > canvasX - clickableArea && map.MAP[i].i.y < canvasY + clickableArea && map.MAP[i].i.y > canvasY - clickableArea) {
+                        if (map.MAP[i].i.type == "star") {
+                            destinationStarName = map.MAP[i].i.id;
+                            break;
+                        }
+                    }
+                }
+                if(destinationStarName != "") {
+                    console.log("destination:" + destinationStarName);
+                    transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips);
+                }
+                canvas.onclick = null;
+            }
     }
 
     function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips){
@@ -122,7 +142,7 @@
     }
 
     function incrementIndustry(starName, selectedStarIndustry){
-        for(i=0; i < map.MAP.length; i++) {
+        for(var i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
                 var owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.industry) {
