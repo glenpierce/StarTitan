@@ -148,7 +148,12 @@ wsServer.on('request', function(request) {
           console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
           if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= shipSpeed) {
             if (starIndex != -1) {
-              map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
+              if(map.MAP[starIndex].i.owner == map.MAP[i].i.owner) {
+                map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
+              } else {
+                //ship combat
+                shipCombat(map.MAP[starIndex].i, map.MAP[i].i);
+              }
               map.MAP.splice(i, 1);
             }
           } else {
@@ -196,6 +201,22 @@ wsServer.on('request', function(request) {
     for(var i = 0; i < map.PlayerData.length; i++){
       if(player == parseInt(map.PlayerData[i].i.id, 10)){
         return parseInt(map.PlayerData[i].i.manufacturing, 10);
+      }
+    }
+  }
+
+  function getWeaponsTech(player){
+    for(var i = 0; i < map.PlayerData.length; i++){
+      if(player == parseInt(map.PlayerData[i].i.id, 10)){
+        return parseInt(map.PlayerData[i].i.weapons, 10);
+      }
+    }
+  }
+
+  function getDefenseTech(player){
+    for(var i = 0; i < map.PlayerData.length; i++){
+      if(player == parseInt(map.PlayerData[i].i.id, 10)){
+        return parseInt(map.PlayerData[i].i.defense, 10);
       }
     }
   }
@@ -352,6 +373,14 @@ wsServer.on('request', function(request) {
   }
 
   function transmitShipOrdersServer(order){
+    for(i=0; i < map.MAP.length; i++) {
+      if (map.MAP[i].i.type == "star") {
+        if (map.MAP[i].i.id == order.order[0].origin) {
+          map.MAP[i].i.ships = parseInt(map.MAP[i].i.ships, 10) - parseInt(order.order[0].numberOfShips, 10);
+          break;
+        }
+      }
+    }
     map.MAP.push({
       "i": {
         type: "ship",
@@ -359,7 +388,7 @@ wsServer.on('request', function(request) {
         destination: order.order[0].destination[0],
         x: order.order[0].x,
         y: order.order[0].y,
-        owner: 0
+        owner: order.order[0].owner
       }
     });
   }
@@ -400,6 +429,28 @@ wsServer.on('request', function(request) {
         }
         break;
       }
+    }
+  }
+
+  function shipCombat(defender, attacker){
+    var defenderShips = defender.ships;
+    var defenderWeaponsTech = getWeaponsTech(defender.owner);
+    var defenderDefenseTech = getDefenseTech(defender.owner);
+    var attackerShips = attacker.ships;
+    var attackerWeaponsTech = getWeaponsTech(attacker.owner);
+    var attackerDefenseTech = getDefenseTech(attacker.owner);
+
+    while(defenderShips > 0 && attackerShips > 0){
+      var attackingDamage = attackerShips*attackerWeaponsTech/defenderDefenseTech;
+      var defendingDamage = defenderShips*defenderWeaponsTech/attackerDefenseTech;
+      defenderShips -= attackingDamage;
+      attackerShips -= defendingDamage;
+    }
+    if(defenderShips > 0){
+      defender.ships = defenderShips;
+    } else {
+      defender.ships = attackerShips;
+      defender.owner = attacker.owner;
     }
   }
 

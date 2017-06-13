@@ -8,8 +8,12 @@
 <br>
 <div id="selectionPanel" style="width:100px; position: fixed;"></div>
 <div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;"></div>
+<div id="researchPanelContainer" style="position: fixed; bottom: 0; display: flex; justify-content: flex-end; width: 100%;">
+    <div id="researchPanel"></div>
+</div>
+
 <div id="playerData"></div>
-<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
+<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"/>
 <script>
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
@@ -21,8 +25,13 @@
     var selectionPanel = document.getElementById("selectionPanel");
     var infoPanel = document.getElementById("infoPanel");
 
-//    var avgWhiteStar =  new Image();
-//    avgWhiteStar.src = "images/averstarwhite.png"
+    var researchPanel = document.getElementById("researchPanel");
+    createResearchPanel();
+
+    var avgWhiteStar =  new Image();
+    avgWhiteStar.src = "images/averstarwhite.png"
+    avgWhiteStar.width = 36;
+    avgWhiteStar.height = 24;
 
     canvas.addEventListener("click", onClick);
     function onClick(event){
@@ -96,11 +105,15 @@
     function openTransmitShipOrders(originStarName){
         var x = 0;
         var y = 0;
+        var owner;
+        var maxShips;
         for(var i=0; i < map.MAP.length; i++){
             if(map.MAP[i].i.type == "star"){
                 if(map.MAP[i].i.id == originStarName){
                     x = map.MAP[i].i.x;
-                    y= map.MAP[i].i.y;
+                    y = map.MAP[i].i.y;
+                    owner = map.MAP[i].i.owner;
+                    maxShips = map.MAP[i].i.ships;
                     break;
                 }
             }
@@ -108,7 +121,7 @@
         canvas.onclick = onClick2;
             function onClick2(event){
                 var destinationStarName = "";
-                var numberOfShips = 1;
+                var numberOfShips = maxShips;
 
                 var canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
                 var canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
@@ -122,13 +135,13 @@
                 }
                 if(destinationStarName != "") {
                     console.log("destination:" + destinationStarName);
-                    transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips);
+                    transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
                 }
                 canvas.onclick = null;
             }
     }
 
-    function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips){
+    function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner){
         var order = {order: []};
         order.order.push({
             origin: originStarName,
@@ -136,7 +149,8 @@
             y: y,
             type: "shipOrder", //change research target, transmit ship orders, send player message/credits/tech
             destination: destinationStarName,
-            numberOfShips: numberOfShips
+            numberOfShips: numberOfShips,
+            owner: owner
         });
         exampleSocket.send(JSON.stringify(order));
     }
@@ -249,9 +263,9 @@
         if(ships > 0){
             ctx.fillText(ships, x, y + 23);
         }
-//        if(owner == 0){
-//            ctx.drawImage(avgWhiteStar, x, y);
-//        } else {
+        if(owner == 0){
+            ctx.drawImage(avgWhiteStar, x, y);
+        } else {
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
             var gradient = ctx.createRadialGradient(x, y, 2, x, y, 8);
@@ -259,7 +273,7 @@
             gradient.addColorStop(1, "black");
             ctx.fillStyle = gradient;
             ctx.fill();
-//        }
+        }
     }
 
     function drawShip(x, y, ships, destination, owner, isSelected, ctx){
@@ -310,6 +324,13 @@
             case 4:
                 return "#FE8EE9"; //pink
         }
+    }
+
+    function createResearchPanel(player){
+//        var weaponsTech = document.createElement('button');
+//        weaponsTech.type = "button";
+//        weaponsTech.innerHTML = map.PlayerData[player].i.weapons;
+//        researchPanel.appendChild(weaponsTech);
     }
 </script>
 </body>
