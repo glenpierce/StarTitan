@@ -7,8 +7,9 @@ var bodyParser = require('body-parser');
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+var index = require('./routes/index');
+var welcome = require('./routes/welcome');
+var login = require('./routes/login');
 
 var app = express();
 
@@ -24,8 +25,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+app.use('/', index);
+app.use('/welcome', welcome);
+app.use('/login', login);
 
 var map = {MAP:[],PlayerData:[]};
 var shipSpeed = 20;

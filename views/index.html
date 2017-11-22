@@ -9,12 +9,19 @@
 <div id="selectionPanel" style="width:100px; position: fixed;"></div>
 <div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;"></div>
 <div id="researchPanelContainer" style="position: fixed; bottom: 0; display: flex; justify-content: flex-end; width: 100%;">
-    <div id="researchPanel"></div>
+    <div id="researchPanel" style="color: white; font-family: monospace;">
+        <div>Weapons</div>
+        <div>Defense</div>
+        <div>Terraforming</div>
+        <div>Manufacturing</div>
+        <div>Range</div>
+    </div>
 </div>
 
 <div id="playerData"></div>
-<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"/>
+<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script>
+    //How do I get the username?
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
     ctx.font = "10px Arial";
@@ -228,6 +235,19 @@
             }
         }
         drawMap();
+    }
+
+    function incrementTech(tech){
+        console.log("increment tech" + tech);
+        var order = {order: []};
+        order.order.push({
+            player: starName,
+            type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+            science: "0",
+            industry: "0",
+            economy: "1"
+        });
+        exampleSocket.send(JSON.stringify(order));
     }
 
     function drawMap() {

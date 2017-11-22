@@ -1,0 +1,11 @@
+doctype html
+include mixins
+html
+    head
+        title Welcome
+        link(rel='stylesheet', href='/stylesheets/style.css')
+    body
+        - for game in games.game
+        +game(game.name, game.playerCount, game.status)
+
+        div(class="button") Create Game
