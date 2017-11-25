@@ -39,6 +39,8 @@ router.get('/', function(req, res, next) {
                 });
             } else {
                 console.log(err);
+                console.log(err.code);
+                console.log(err.message);
             }
         });
         connection.end();

@@ -10,6 +10,7 @@ var http = require('http');
 var index = require('./routes/index');
 var welcome = require('./routes/welcome');
 var login = require('./routes/login');
+var createUser = require('./routes/createUser');
 
 var app = express();
 
@@ -28,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/welcome', welcome);
 app.use('/login', login);
+app.use('/createUser', createUser);
 
 var map = {MAP:[],PlayerData:[]};
 var shipSpeed = 20;

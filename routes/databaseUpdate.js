@@ -43,13 +43,35 @@ function update(){
         ");";
     query.push(createUsersTable);
 
+    createUser =
+        "CREATE PROCEDURE createUser(IN emailInput VARCHAR(254), IN passwordHash VARCHAR(254), IN alias VARCHAR(254))\n" +
+        "BEGIN\n" +
+        "insert into users (email, hashedPassword, alias) values(emailInput, passwordHash, alias);\n" +
+        "END";
+    query.push(createUser);
+
+    login =
+        "CREATE PROCEDURE login(IN emailInput VARCHAR(254))\n" +
+        "BEGIN\n" +
+        "SELECT email, hashedPassword from users WHERE email = emailInput;\n" +
+        "END";
+    query.push(login);
+
+    createTurnsTable =
+        "create table turns(" +
+        "`gameId` INT," +
+        "`turn` INT" +
+        "`json` JSON" +
+        ");";
+    query.push(createTurnsTable);
+
     createGamesTable =
         "create table games(" +
         "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-        "`turn` INT" +
-        "`players` JSON" +
-        "`json` JSON" +
+        "`name` VARCHAR(254)," +
+        "`current` BIT" +
         ");";
+    query.push(createGamesTable);
 
     for(var i = 0; i < query.length; i++) {
 
