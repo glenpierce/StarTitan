@@ -26,7 +26,7 @@ router.get('/', function(req, res, next) {
         });
 
         connection.connect();
-        query = 'CALL getGamesByUser(' + req.session.user + ');';
+        query = 'select * from games where status between 0 and 2;';
         connection.query(query, function(err, rows, fields) {
             if (!err) {
                 data = rows[0][0];
@@ -45,7 +45,14 @@ router.get('/', function(req, res, next) {
         });
         connection.end();
     } else {
-        res.render('login');
+        res.render('welcome', {
+            fromServer: "nothing",
+            stringFromServer: "stringFromServer",
+            username: "req.session.user",
+            games: [
+                    {gameName: "name", gamePlayerCount: "player Count", gameStatus: "null"}
+                ]
+        });
     }
 });
 

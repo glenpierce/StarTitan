@@ -69,7 +69,7 @@ function update(){
         "create table games(" +
         "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
         "`name` VARCHAR(254)," +
-        "`current` BIT" +
+        "`status` INT" + // 0 = new game accepting players, 1 = game in progress, 2 = paused game, 3 = completed game
         ");";
     query.push(createGamesTable);
 

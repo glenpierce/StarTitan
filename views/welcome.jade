@@ -4,8 +4,23 @@ html
     head
         title Welcome
         link(rel='stylesheet', href='/stylesheets/style.css')
-    body
-        - for game in games.game
-        +game(game.name, game.playerCount, game.status)
+        script.
+            function createGame(){
+                document.getElementById('createNewGameModal').style.display = "flex";
+                document.getElementById('createNewGameInput').focus();
+            }
 
-        div(class="button") Create Game
+            function hideModal(id) {
+                document.getElementById(id).style.display = "none";
+            }
+    body
+        div(style="display:none; position:fixed; height:100%; width:100%; background-color:rgba(0,0,0,0.4); z-index:4;" id="createNewGameModal" onclick="hideModal('createNewGameModal')")
+            div(style="height:200px; width:400px; background-color:white; margin:auto; border-radius:10px;" onclick="stopPropagation(event);")
+                input(id="createNewGameInput")
+                button(onclick="postNewGameToServer(); hideModal('createNewGameModal');") Create Game
+
+
+        - for game in games
+            +game(game.name, game.playerCount, game.status)
+
+        div(class="button" onclick="createGame()") Create Game
