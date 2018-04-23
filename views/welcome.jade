@@ -20,7 +20,6 @@ html
                 button(onclick="postNewGameToServer(); hideModal('createNewGameModal');") Create Game
 
 
-        - for game in games
-            +game(game.name, game.playerCount, game.status)
+        +games(games)
 
         div(class="button" onclick="createGame()") Create Game

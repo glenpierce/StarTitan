@@ -29,14 +29,18 @@ router.get('/', function(req, res, next) {
         query = 'select * from games where status between 0 and 2;';
         connection.query(query, function(err, rows, fields) {
             if (!err) {
-                data = rows[0][0];
-                stringFromServer = JSON.stringify(rows[0][0]);
-                console.log(data);
-                res.render('welcome', {
-                    fromServer: data,
-                    stringFromServer: stringFromServer,
-                    username: req.session.user
-                });
+                if(rows[0] == null){
+                    renderWelcomePage(res);
+                } else {
+                    data = rows[0][0];
+                    stringFromServer = JSON.stringify(rows[0][0]);
+                    console.log(data);
+                    res.render('welcome', {
+                        fromServer: data,
+                        stringFromServer: stringFromServer,
+                        username: req.session.user
+                    });
+                }
             } else {
                 console.log(err);
                 console.log(err.code);
@@ -45,15 +49,19 @@ router.get('/', function(req, res, next) {
         });
         connection.end();
     } else {
-        res.render('welcome', {
-            fromServer: "nothing",
-            stringFromServer: "stringFromServer",
-            username: "req.session.user",
-            games: [
-                    {gameName: "name", gamePlayerCount: "player Count", gameStatus: "null"}
-                ]
-        });
+        renderWelcomePage(res);
     }
 });
+
+function renderWelcomePage(res){
+    res.render('welcome', {
+        fromServer: "nothing",
+        stringFromServer: "stringFromServer",
+        username: "req.session.user",
+        games: [
+            {gameName: "name", gamePlayerCount: "player Count", gameStatus: "null"}
+        ]
+    });
+}
 
 module.exports = router;

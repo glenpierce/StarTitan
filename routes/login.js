@@ -39,6 +39,7 @@ router.post('/', function(req, res){
             bcrypt.compare(req.body.password, rows[0][0].hashedPassword, function(err, response) {  //todo: bcrypt.compare(req.body.password + "salty salt", rows[0][0].hashedPassword, function(err, response) {
                 console.log(response);
                 if(response){
+                    console.log(req);
                     req.session.user = req.body.username;
                     return res.send('/welcome');
                 }

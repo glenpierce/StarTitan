@@ -1,18 +1,5 @@
-var express = require('express');
-var router = express.Router();
 var mysql = require('mysql');
-var session = require('client-sessions');
-var path = require("path");
-var http = require('http');
-var https = require('https');
-var config = require('../config.js');
-
-var app = express();
-
-router.get('/update', function(req, res, next) {
-    update();
-    res.redirect('/');
-});
+var config = require('./config.js');
 
 function update(){
     connection = mysql.createConnection({
@@ -61,7 +48,8 @@ function update(){
         "create table turns(" +
         "`gameId` INT," +
         "`turn` INT" +
-        "`json` JSON" +
+        "`json` VARCHAR(2500)" +
+        // "`json` JSON" + //in mysql 5.7 which I'd like to switch to some day
         ");";
     query.push(createTurnsTable);
 
@@ -72,6 +60,9 @@ function update(){
         "`status` INT" + // 0 = new game accepting players, 1 = game in progress, 2 = paused game, 3 = completed game
         ");";
     query.push(createGamesTable);
+
+    //node
+    //var scripts = require('./scripts');
 
     for(var i = 0; i < query.length; i++) {
 
@@ -91,4 +82,4 @@ function update(){
     connection.end();
 }
 
-module.exports = router;
+module.exports.update = update;
