@@ -13,9 +13,14 @@ html
             function hideModal(id) {
                 document.getElementById(id).style.display = "none";
             }
-    body
+
+            function postNewGameToServer() {
+                console.log(document.getElementById('createNewGameInput').value);
+            }
+
+body
         div(style="display:none; position:fixed; height:100%; width:100%; background-color:rgba(0,0,0,0.4); z-index:4;" id="createNewGameModal" onclick="hideModal('createNewGameModal')")
-            div(style="height:200px; width:400px; background-color:white; margin:auto; border-radius:10px;" onclick="stopPropagation(event);")
+            div(style="height:200px; width:400px; background-color:white; margin:auto; border-radius:10px;")
                 input(id="createNewGameInput")
                 button(onclick="postNewGameToServer(); hideModal('createNewGameModal');") Create Game
 
