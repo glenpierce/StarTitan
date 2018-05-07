@@ -53,6 +53,30 @@ router.get('/', function(req, res, next) {
     }
 });
 
+router.post('/', function(req, res){
+
+    console.log(req.body);
+
+    var connection = mysql.createConnection({
+        host: config.rdsHost,
+        user: config.rdsUser,
+        password: config.rdsPassword,
+        database: config.rdsDatabase
+    });
+
+    connection.connect();
+
+    connection.query('CALL createGame("' + req.body.username + '", "' + req.body.gameName + '")', function(err, rows, fields){
+        if (!err && rows[0][0] != undefined) {
+            console.log(rows);
+        } else {
+            console.log('Error while performing Query.');
+        }
+    });
+
+    connection.end();
+});
+
 function renderWelcomePage(res){
     res.render('welcome', {
         fromServer: "nothing",

@@ -15,7 +15,24 @@ html
             }
 
             function postNewGameToServer() {
-                console.log(document.getElementById('createNewGameInput').value);
+                console.log("postNewGameToServer");
+                httpPostAsync("/welcome", null);
+            }
+
+            function httpPostAsync(theUrl, callback) {
+                let gameName = document.getElementById('createNewGameInput').value;
+                let data = {
+                    "gameName": gameName
+                }
+                var xmlHttp = new XMLHttpRequest();
+                xmlHttp.onreadystatechange = function () {
+                    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                        callback(xmlHttp.responseText);
+                }
+                xmlHttp.open("POST", theUrl, true); // true for asynchronous
+                xmlHttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+                var dataAsJson = JSON.stringify(data);
+                xmlHttp.send(dataAsJson);
             }
 
 body
