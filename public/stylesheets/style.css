@@ -1,13 +1,21 @@
 body {
   padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px Helvetica;
+  color: white;
+  background-color: black;
 }
 
 a {
   color: #00B7FF;
 }
 
-button {
+.input {
+  background-color:black; color:white; border-color:white; border-radius:5px; padding:5px; outline:none;
+}
+
+.border {
+  border-style: solid;
+  border-color: white;
   border-width: 1px;
   border-radius: 5px;
   padding: 10px;

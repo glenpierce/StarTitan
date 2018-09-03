@@ -16,7 +16,7 @@ html
 
             function postNewGameToServer() {
                 console.log("postNewGameToServer");
-                httpPostAsync("/welcome", null);
+                httpPostAsync("/welcome", console.log);
             }
 
             function httpPostAsync(theUrl, callback) {
@@ -37,11 +37,11 @@ html
 
 body
         div(style="display:none; position:fixed; height:100%; width:100%; background-color:rgba(0,0,0,0.4); z-index:4;" id="createNewGameModal" onclick="hideModal('createNewGameModal')")
-            div(style="height:200px; width:400px; background-color:white; margin:auto; border-radius:10px;")
-                input(id="createNewGameInput")
-                button(onclick="postNewGameToServer(); hideModal('createNewGameModal');") Create Game
+            div(style="height:200px; width:400px; background-color:black; margin:auto;" class="border")
+                input(id="createNewGameInput" class="input")
+                div(onclick="postNewGameToServer(); hideModal('createNewGameModal');" style="cursor:pointer;" class="border") Create Game
 
 
         +games(games)
 
-        div(class="button" onclick="createGame()") Create Game
+        div(class="border" onclick="createGame()" style="cursor:pointer;") Create Game

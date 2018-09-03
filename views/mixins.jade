@@ -1,5 +1,5 @@
 mixin games(games)
-    div(style = "display:flex; justify-content: space-around; border: solid; margin-bottom: 20px;")
+    div(style = "display:flex; justify-content: space-around; margin-bottom: 20px;" class="border")
         div Game Name
             - for game in games
                 div !{game.name}

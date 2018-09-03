@@ -17,39 +17,43 @@ app.use(session({
 
 router.get('/', function(req, res, next) {
     console.log("Welcome");
-    if (req.session && req.session.user) {
-        connection = mysql.createConnection({
-            host: config.rdsHost,
-            user: config.rdsUser,
-            password: config.rdsPassword,
-            database: config.rdsDatabase
-        });
+    if(req.session.user) {
+        if (req.session && req.session.user) {
+            connection = mysql.createConnection({
+                host: config.rdsHost,
+                user: config.rdsUser,
+                password: config.rdsPassword,
+                database: config.rdsDatabase
+            });
 
-        connection.connect();
-        query = 'select * from games where status between 0 and 2;';
-        connection.query(query, function(err, rows, fields) {
-            if (!err) {
-                if(rows[0] == null){
-                    renderWelcomePage(res);
+            connection.connect();
+            query = 'select * from games where status between 0 and 2;';
+            connection.query(query, function (err, rows, fields) {
+                if (!err) {
+                    if (rows[0] == null) {
+                        renderWelcomePage(res);
+                    } else {
+                        data = getGamesFromRows(rows);
+                        stringFromServer = JSON.stringify(rows);
+                        console.log(data);
+                        res.render('welcome', {
+                            fromServer: data,
+                            stringFromServer: stringFromServer,
+                            username: req.session.user
+                        });
+                    }
                 } else {
-                    data = rows[0][0];
-                    stringFromServer = JSON.stringify(rows[0][0]);
-                    console.log(data);
-                    res.render('welcome', {
-                        fromServer: data,
-                        stringFromServer: stringFromServer,
-                        username: req.session.user
-                    });
+                    console.log(err);
+                    console.log(err.code);
+                    console.log(err.message);
                 }
-            } else {
-                console.log(err);
-                console.log(err.code);
-                console.log(err.message);
-            }
-        });
-        connection.end();
+            });
+            connection.end();
+        } else {
+            renderWelcomePage(res);
+        }
     } else {
-        renderWelcomePage(res);
+        res.redirect('login');
     }
 });
 
@@ -66,11 +70,13 @@ router.post('/', function(req, res){
 
     connection.connect();
 
-    connection.query('CALL createGame("' + req.body.username + '", "' + req.body.gameName + '")', function(err, rows, fields){
-        if (!err && rows[0][0] != undefined) {
+    connection.query('CALL createGame("' + req.body.gameName + '", "' + req.body.username + '")', function(err, rows, fields){
+        if (!err && rows != undefined) {
             console.log(rows);
+            res.send();
         } else {
             console.log('Error while performing Query.');
+            res.send();
         }
     });
 
@@ -86,6 +92,22 @@ function renderWelcomePage(res){
             {gameName: "name", gamePlayerCount: "player Count", gameStatus: "null"}
         ]
     });
+}
+
+function getGamesFromRows(rows){
+    if(rows == null || rows.length < 1){
+        return "";
+    }
+    console.log(rows);
+    returnedRows = [];
+    for(i = 0; i < rows.length; i++){
+        // console.log(rows.get(i));
+    }
+    // for(row in rows){
+    //     console.log("row:");
+    //     console.log(row);
+    // }
+    return returnedRows;
 }
 
 module.exports = router;

@@ -57,12 +57,22 @@ function update(){
         "create table games(" +
         "`id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY," +
         "`name` VARCHAR(254)," +
+        "`creator` VARCHAR(254)," +
         "`status` INT" + // 0 = new game accepting players, 1 = game in progress, 2 = paused game, 3 = completed game
         ");";
     query.push(createGamesTable);
 
+    createGameProcedure =
+        "CREATE PROCEDURE createGame(IN gameName VARCHAR(254), IN user VARCHAR(254))\n" +
+        "BEGIN\n" +
+        "insert into games (name, creator, status) values(gameName, user, 0);\n" +
+        "END";
+    query.push(createGameProcedure);
+
     //node
     //var scripts = require('./scripts');
+
+    query = [useDb, createGameProcedure];
 
     for(var i = 0; i < query.length; i++) {
 
