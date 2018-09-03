@@ -42,6 +42,7 @@ body
                 div(onclick="postNewGameToServer(); hideModal('createNewGameModal');" style="cursor:pointer;" class="border") Create Game
 
 
-        +games(games)
+        if(games)
+            +games(games)
 
         div(class="border" onclick="createGame()" style="cursor:pointer;") Create Game
