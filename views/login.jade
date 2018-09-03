@@ -37,4 +37,6 @@ html
                 div(style="margin:auto; width:300px;")
                     div(style="display:inline-block; margin-top:4px;") Password
                     input(id="password" style="display:inline; float:right;" class="input" type="password")
-            div(onclick='httpPostAsync("/login", redirect)' class="border" style="cursor:pointer; margin:auto;") Login
+            div(onclick='httpPostAsync("/login", redirect)' class="border" style="cursor:pointer; margin:auto; margin-bottom:10px;") Login
+
+            div(onclick='httpPostAsync("/createUser", redirect)' class="border" style="cursor:pointer; margin:auto;") Create User
