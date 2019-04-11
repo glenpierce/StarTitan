@@ -1,5 +1,10 @@
 doctype html
 include mixins
+
+script.
+    games = !{gamesString};
+    console.log(games);
+
 html
     head
         title Welcome
@@ -41,8 +46,8 @@ body
                 input(id="createNewGameInput" class="input")
                 div(onclick="postNewGameToServer(); hideModal('createNewGameModal');" style="cursor:pointer;" class="border") Create Game
 
-
-        if(games)
-            +games(games)
+        console.log(games)
+        if(gamesObject.length > 0)
+            +games(gamesObject)
 
         div(class="border" onclick="createGame()" style="cursor:pointer;") Create Game

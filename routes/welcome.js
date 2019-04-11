@@ -35,10 +35,9 @@ router.get('/', function(req, res, next) {
                     } else {
                         data = getGamesFromRows(rows);
                         stringFromServer = JSON.stringify(rows);
-                        console.log(data);
                         res.render('welcome', {
-                            fromServer: data,
-                            stringFromServer: stringFromServer,
+                            gamesObject: data,
+                            gamesString: stringFromServer,
                             username: req.session.user
                         });
                     }
@@ -98,15 +97,15 @@ function getGamesFromRows(rows){
     if(rows == null || rows.length < 1){
         return "";
     }
-    console.log(rows);
-    returnedRows = [];
-    for(i = 0; i < rows.length; i++){
-        // console.log(rows.get(i));
+    var returnedRows = [];
+    for(i = 0; i < rows.length; i++) {
+        game = {};
+        game.id = rows[i].id;
+        game.name = rows[i].name;
+        game.status = rows[i].status;
+        game.creator = rows[i].creator;
+        returnedRows.push(game);
     }
-    // for(row in rows){
-    //     console.log("row:");
-    //     console.log(row);
-    // }
     return returnedRows;
 }
 

@@ -72,7 +72,7 @@ function update(){
     //node
     //var scripts = require('./scripts');
 
-    query = [useDb, createGameProcedure];
+    // query = [useDb, createGameProcedure];
 
     for(var i = 0; i < query.length; i++) {
 
