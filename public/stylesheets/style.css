@@ -9,6 +9,10 @@ a {
   color: #00B7FF;
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .input {
   background-color:black; color:white; border-color:white; border-radius:5px; padding:5px; outline:none;
 }
