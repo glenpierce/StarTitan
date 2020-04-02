@@ -1,21 +1,21 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var session = require('client-sessions');
-var WebSocketServer = require('websocket').server;
-var http = require('http');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('client-sessions');
+const socketIO = require('socket.io');
+const http = require('http');
 
-var index = require('./routes/index');
-var welcome = require('./routes/welcome');
-var login = require('./routes/login');
-var createUser = require('./routes/createUser');
+const index = require('./routes/index');
+const welcome = require('./routes/welcome');
+const login = require('./routes/login');
+const createUser = require('./routes/createUser');
 
-var config = require('./config.js');
+const config = require('./config.js');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -41,14 +41,9 @@ app.use('/welcome', welcome);
 app.use('/login', login);
 app.use('/createUser', createUser);
 
-var map = {MAP:[],PlayerData:[]};
-var shipSpeed = 20;
-var gameSpeed = 1000;
-var players = [];
-setupGame(map);
-var gameOn = false;
+let games = [];
 
-var server = http.createServer(function(request, response) {
+const server = http.createServer(function(request, response) {
   console.log((new Date()) + ' Received request for ' + request.url);
   response.writeHead(404);
   response.end();
@@ -57,50 +52,58 @@ server.listen(3001, function() {
   console.log((new Date()) + ' Server is listening on port 3001');
 });
 
-wsServer = new WebSocketServer({
-  httpServer: server,
-  // You should not use autoAcceptConnections for production applications
-  autoAcceptConnections: false
+const io = socketIO(server, {});
+
+io.on('connection', (socket) => {
+  socket.on('createNewGame', () => {
+    let game = createNewGame(socket);
+    games.push(game);
+    socket.emit(JSON.stringify(game.map));
+  });
+
+  socket.on('player-join', (gameId) => {
+    addNewPlayer(socket, gameId);
+  });
+
+  socket.on('playerAction', (data) => {
+    playerAction(socket.id, data);
+  });
+
+  socket.on('disconnect', () => {
+    removePlayer(socket.id);
+  })
 });
 
-function originIsAllowed(origin) {
-  // put logic here to detect whether the specified origin is allowed.
-  return true;
+function createNewGame(socket) {
+  let game = {};
+  game.id = generateRandomId();
+  game.players = [];
+  game.sockets = [socket];
+  game.map = {MAP:[],PlayerData:[]};
+  setupGame(map);
+  game.shipSpeed = 20;
+  game.gameSpeed = 1000;
+  return game;
 }
 
-wsServer.on('request', function(request) {
-  if (!originIsAllowed(request.origin)) {
-    request.reject();
-    console.log((new Date()) + ' Connection from origin ' + request.origin + ' rejected.');
-    return;
-  }
+function generateRandomId() {
+  const min = 0;
+  const max = 999_999;
 
-  var connection = request.accept('echo-protocol', request.origin);
-  global.connection = connection;
-  console.log((new Date()) + ' Connection accepted.');
-  connection.on('message', function(message) {
-    if (message.type === 'utf8') {
-      console.log('Received Message: ' + message.utf8Data);
-      if(message.utf8Data == "Map?") {
-        gameOn = true;
-        connection.send(JSON.stringify(map));
-      } else if(message.utf8Data.substr(0,1) != "c"){
-        var order = {order:[]};
-        order = JSON.parse(message.utf8Data);
-        console.log(JSON.stringify(order));
-        console.log(order.order[0].id);
-        dispatchOrder(order);
-      }
-    }
-  });
-  connection.on('close', function(reasonCode, description) {
-    console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-  });
-});
+  return Math.ceil(Math.random() * (max - min) + min);
+}
+
+function playerAction(socketId, data) {
+  let order = {order:[]};
+  order = JSON.parse(data.utf8Data);
+  console.log(JSON.stringify(order));
+  console.log(order.order[0].id);
+  dispatchOrder(order);
+}
 
 // catch 404 and forward to error handler
   app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
   });
@@ -129,82 +132,88 @@ wsServer.on('request', function(request) {
     });
   });
 
-  setInterval(gameLoop, gameSpeed);
+  setInterval(gameLoop, 60_000);
 
   function gameLoop() {
-    if(!gameOn){
-      return;
-    }
-    for (i = 0; i < map.MAP.length; i++) {
-      if (map.MAP[i].i.type == "star") {
-        var industry = parseInt(map.MAP[i].i.industry, 10);
-        var ships = parseInt(map.MAP[i].i.ships, 10);
-        var owner = parseInt(map.MAP[i].i.owner);
-        var manufacturingTech = getManufacturingTech(owner);
-        map.MAP[i].i.ships = ships + industry * manufacturingTech;
-        map.PlayerData[owner].i.credits = parseInt(map.MAP[i].i.economy) + parseInt(map.PlayerData[owner].i.credits);
-      }
-      if (map.MAP[i].i.type == "ship") {
-        if(map.MAP[i].i.destination != "null") {
-          var shipX = parseInt(map.MAP[i].i.x, 10);
-          var shipY = parseInt(map.MAP[i].i.y, 10);
-          var destinationX = 0;
-          var destinationY = 0;
-          var starIndex = -1;
-          for (var j = 0; j < map.MAP.length; j++) {
-            if (map.MAP[j].i.id == map.MAP[i].i.destination) {
-              destinationX = parseInt(map.MAP[j].i.x, 10);
-              destinationY = parseInt(map.MAP[j].i.y, 10);
-              starIndex = j;
-              j = map.MAP.length;
-            }
+    games.forEach(game => {
+      if (game.state == 'PAUSED') {
+        return;
+      } else {
+        let map = game.map;
+        for (let i = 0; i < map.MAP.length; i++) {
+          if (map.MAP[i].i.type == "star") {
+            let industry = parseInt(map.MAP[i].i.industry, 10);
+            let ships = parseInt(map.MAP[i].i.ships, 10);
+            let owner = parseInt(map.MAP[i].i.owner);
+            let manufacturingTech = getManufacturingTech(owner);
+            map.MAP[i].i.ships = ships + industry * manufacturingTech;
+            map.PlayerData[owner].i.credits = parseInt(map.MAP[i].i.economy) + parseInt(map.PlayerData[owner].i.credits);
           }
-          console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
-          if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= shipSpeed) {
-            if (starIndex != -1) {
-              if(map.MAP[starIndex].i.owner == map.MAP[i].i.owner) {
-                map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
-              } else {
-                //ship combat
-                shipCombat(map.MAP[starIndex].i, map.MAP[i].i);
-              }
-              map.MAP.splice(i, 1);
-            }
-          } else {
-              if (shipX > destinationX && shipY > destinationY) {
-                var angle = Math.atan((shipX - destinationX) / (shipY - destinationY));
-                map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
-                map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
-              } else if (shipX > destinationX && shipY < destinationY) {
-                var angle = Math.atan((shipX - destinationX) / (destinationY - shipY));
-                map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
-                map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
-              } else if (shipX < destinationX && shipY > destinationY) { //this is wrong somewhere
-                var angle = Math.atan((destinationX - shipX) / (shipY - destinationY));
-                map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
-                map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
-              } else if (shipX < destinationX && shipY < destinationY) {
-                var angle = Math.atan((destinationY - shipY) / (destinationX - shipX));
-                map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
-                map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
-              } else if (shipX == destinationX) {
-                if (shipY > destinationY) {
-                  map.MAP[i].i.y = shipY - shipSpeed;
-                } else {
-                  map.MAP[i].i.y = shipY + shipSpeed;
+          if (map.MAP[i].i.type == "ship") {
+            if (map.MAP[i].i.destination != "null") {
+              let shipX = parseInt(map.MAP[i].i.x, 10);
+              let shipY = parseInt(map.MAP[i].i.y, 10);
+              let destinationX = 0;
+              let destinationY = 0;
+              let starIndex = -1;
+              for (let j = 0; j < map.MAP.length; j++) {
+                if (map.MAP[j].i.id == map.MAP[i].i.destination) {
+                  destinationX = parseInt(map.MAP[j].i.x, 10);
+                  destinationY = parseInt(map.MAP[j].i.y, 10);
+                  starIndex = j;
+                  j = map.MAP.length;
                 }
-              } else if (shipY == destinationY) {
-                if (shipX > destinationX) {
-                  map.MAP[i].i.x = shipX - shipSpeed;
-                } else {
-                  map.MAP[i].i.x = shipX + shipSpeed;
+              }
+              console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
+              if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= shipSpeed) {
+                if (starIndex != -1) {
+                  if (map.MAP[starIndex].i.owner == map.MAP[i].i.owner) {
+                    map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
+                  } else {
+                    //ship combat
+                    shipCombat(map.MAP[starIndex].i, map.MAP[i].i);
+                  }
+                  map.MAP.splice(i, 1);
+                }
+              } else {
+                if (shipX > destinationX && shipY > destinationY) {
+                  const angle = Math.atan((shipX - destinationX) / (shipY - destinationY));
+                  map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
+                  map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
+                } else if (shipX > destinationX && shipY < destinationY) {
+                  const angle = Math.atan((shipX - destinationX) / (destinationY - shipY));
+                  map.MAP[i].i.x = shipX - Math.sin(angle) * shipSpeed;
+                  map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
+                } else if (shipX < destinationX && shipY > destinationY) { //this is wrong somewhere
+                  const angle = Math.atan((destinationX - shipX) / (shipY - destinationY));
+                  map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
+                  map.MAP[i].i.y = shipY - Math.cos(angle) * shipSpeed;
+                } else if (shipX < destinationX && shipY < destinationY) {
+                  const angle = Math.atan((destinationY - shipY) / (destinationX - shipX));
+                  map.MAP[i].i.x = shipX + Math.sin(angle) * shipSpeed;
+                  map.MAP[i].i.y = shipY + Math.cos(angle) * shipSpeed;
+                } else if (shipX == destinationX) {
+                  if (shipY > destinationY) {
+                    map.MAP[i].i.y = shipY - shipSpeed;
+                  } else {
+                    map.MAP[i].i.y = shipY + shipSpeed;
+                  }
+                } else if (shipY == destinationY) {
+                  if (shipX > destinationX) {
+                    map.MAP[i].i.x = shipX - shipSpeed;
+                  } else {
+                    map.MAP[i].i.x = shipX + shipSpeed;
+                  }
                 }
               }
             }
           }
         }
+        game.sockets.forEach((socket) => {
+          io.to(socket).emit('state', JSON.stringify(map))
+        });
       }
-    global.connection.send(JSON.stringify(map));
+    });
   }
 
   function getDistancebetween(x0, y0, x1, y1){
@@ -212,7 +221,7 @@ wsServer.on('request', function(request) {
   }
 
   function getManufacturingTech(player) {
-    for(var i = 0; i < map.PlayerData.length; i++){
+    for(let i = 0; i < map.PlayerData.length; i++){
       if(player == parseInt(map.PlayerData[i].i.id, 10)){
         return parseInt(map.PlayerData[i].i.manufacturing, 10);
       }
@@ -220,7 +229,7 @@ wsServer.on('request', function(request) {
   }
 
   function getWeaponsTech(player){
-    for(var i = 0; i < map.PlayerData.length; i++){
+    for(let i = 0; i < map.PlayerData.length; i++){
       if(player == parseInt(map.PlayerData[i].i.id, 10)){
         return parseInt(map.PlayerData[i].i.weapons, 10);
       }
@@ -242,35 +251,39 @@ wsServer.on('request', function(request) {
       "Corvus", "Naos", "Pherkad", "Polaris", "Pollux", "Rana", "Regor", "Rigel", "Sabik", "Zain"];
 
     for (i = 0; i < 4; i++) {
+      let xMin;
+      let xMax;
+      let yMin;
+      let yMax;
       switch (i) {
         case 0:
-          var xMin = 10;
-          var xMax = 500;
-          var yMin = 300;
-          var yMax = 600;
+          xMin = 10;
+          xMax = 500;
+          yMin = 300;
+          yMax = 600;
           break;
         case 1:
-          var xMin = 500;
-          var xMax = 1000;
-          var yMin = 300;
-          var yMax = 600;
+          xMin = 500;
+          xMax = 1000;
+          yMin = 300;
+          yMax = 600;
           break;
         case 2:
-          var xMin = 10;
-          var xMax = 500;
-          var yMin = 10;
-          var yMax = 300;
+          xMin = 10;
+          xMax = 500;
+          yMin = 10;
+          yMax = 300;
           break;
         case 3:
-          var xMin = 500;
-          var xMax = 1000;
-          var yMin = 10;
-          var yMax = 300;
+          xMin = 500;
+          xMax = 1000;
+          yMin = 10;
+          yMax = 300;
           break;
       }
       for (j = 0; j < 10; j++) {
-        var x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
-        var y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
+        let x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
+        let y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
 
         map.MAP.push({
           "i": {
@@ -354,7 +367,7 @@ wsServer.on('request', function(request) {
       }
     });
 
-    for(var i = 0; i < 5; i++)
+    for(let i = 0; i < 5; i++)
     {
       map.PlayerData.push({
         "i": {
@@ -387,7 +400,7 @@ wsServer.on('request', function(request) {
   }
 
   function transmitShipOrdersServer(order){
-    for(i=0; i < map.MAP.length; i++) {
+    for(let i = 0; i < map.MAP.length; i++) {
       if (map.MAP[i].i.type == "star") {
         if (map.MAP[i].i.id == order.order[0].origin) {
           map.MAP[i].i.ships = parseInt(map.MAP[i].i.ships, 10) - parseInt(order.order[0].numberOfShips, 10);
@@ -408,9 +421,9 @@ wsServer.on('request', function(request) {
   }
 
   function incrementIndustryServer(order){
-    for(i=0; i < map.MAP.length; i++) {
-      if(map.MAP[i].i.id == order.order[0].id){
-        var owner = parseInt(map.MAP[i].i.owner);
+    for(let i = 0; i < map.MAP.length; i++) {
+      if(map.MAP[i].i.id == order.order[0].id) {
+        const owner = parseInt(map.MAP[i].i.owner);
         if(map.PlayerData[owner].i.credits >= map.MAP[i].i.industry) {
           map.PlayerData[owner].i.credits -= map.MAP[i].i.industry;
           map.MAP[i].i.industry = parseInt(map.MAP[i].i.industry, 10) + 1;
@@ -423,7 +436,7 @@ wsServer.on('request', function(request) {
   function incrementScienceServer(order){
     for(i=0; i < map.MAP.length; i++) {
       if(map.MAP[i].i.id == order.order[0].id){
-        var owner = parseInt(map.MAP[i].i.owner);
+        const owner = parseInt(map.MAP[i].i.owner);
         if(map.PlayerData[owner].i.credits >= map.MAP[i].i.science) {
           map.PlayerData[owner].i.credits -= map.MAP[i].i.science;
           map.MAP[i].i.science = parseInt(map.MAP[i].i.science, 10) + 1;
@@ -434,9 +447,9 @@ wsServer.on('request', function(request) {
   }
 
   function incrementEconomyServer(order){
-    for(i=0; i < map.MAP.length; i++) {
+    for(let i = 0; i < map.MAP.length; i++) {
       if(map.MAP[i].i.id == order.order[0].id){
-        var owner = parseInt(map.MAP[i].i.owner);
+        const owner = parseInt(map.MAP[i].i.owner);
         if(map.PlayerData[owner].i.credits >= map.MAP[i].i.economy) {
           map.PlayerData[owner].i.credits -= map.MAP[i].i.economy;
           map.MAP[i].i.economy = parseInt(map.MAP[i].i.economy, 10) + 1;
@@ -447,16 +460,16 @@ wsServer.on('request', function(request) {
   }
 
   function shipCombat(defender, attacker){
-    var defenderShips = defender.ships;
-    var defenderWeaponsTech = getWeaponsTech(defender.owner);
-    var defenderDefenseTech = getDefenseTech(defender.owner);
-    var attackerShips = attacker.ships;
-    var attackerWeaponsTech = getWeaponsTech(attacker.owner);
-    var attackerDefenseTech = getDefenseTech(attacker.owner);
+    let defenderShips = defender.ships;
+    let defenderWeaponsTech = getWeaponsTech(defender.owner);
+    let defenderDefenseTech = getDefenseTech(defender.owner);
+    let attackerShips = attacker.ships;
+    let attackerWeaponsTech = getWeaponsTech(attacker.owner);
+    let attackerDefenseTech = getDefenseTech(attacker.owner);
 
     while(defenderShips > 0 && attackerShips > 0){
-      var attackingDamage = attackerShips*attackerWeaponsTech/defenderDefenseTech;
-      var defendingDamage = defenderShips*defenderWeaponsTech/attackerDefenseTech;
+      let attackingDamage = attackerShips*attackerWeaponsTech/defenderDefenseTech;
+      let defendingDamage = defenderShips*defenderWeaponsTech/attackerDefenseTech;
       defenderShips -= attackingDamage;
       attackerShips -= defendingDamage;
     }

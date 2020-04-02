@@ -21,36 +21,38 @@
 
 <div id="playerData"></div>
 <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
+<script src="/javascripts/socket.io.dev.js"></script>
 <script>
     //How do I get the username?
-    var canvas = document.getElementById("myCanvas");
-    var ctx = canvas.getContext("2d");
+    let canvas = document.getElementById("myCanvas");
+    let ctx = canvas.getContext("2d");
     ctx.font = "10px Arial";
     ctx.textAlign = "center";
-    var map;
-    var clickableArea = 20;
+    let map;
+    let clickableArea = 20;
+    const socket = io();
 
-    var selectionPanel = document.getElementById("selectionPanel");
-    var infoPanel = document.getElementById("infoPanel");
+    let selectionPanel = document.getElementById("selectionPanel");
+    let infoPanel = document.getElementById("infoPanel");
 
-    var researchPanel = document.getElementById("researchPanel");
+    let researchPanel = document.getElementById("researchPanel");
     createResearchPanel();
 
-    var avgWhiteStar =  new Image();
+    let avgWhiteStar =  new Image();
     avgWhiteStar.src = "images/averstarwhite.png";
     avgWhiteStar.width = 36;
     avgWhiteStar.height = 24;
 
     canvas.addEventListener("click", onClick);
     function onClick(event){
-        var canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
-        var canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
-        exampleSocket.send("click(" + canvasX +", "+ canvasY +")");
+        let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
+        let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+        socket.emit("click(" + canvasX +", "+ canvasY +")");
         console.log("click(" + canvasX +", "+ canvasY +")");
         while (selectionPanel.hasChildNodes()) {
             selectionPanel.removeChild(selectionPanel.lastChild);
         }
-        var selectionCount = 0;
+        let selectionCount = 0;
         for(i=0; i < map.MAP.length; i++){
             if(map.MAP[i].i.x < canvasX + clickableArea && map.MAP[i].i.x > canvasX - clickableArea && map.MAP[i].i.y < canvasY + clickableArea && map.MAP[i].i.y > canvasY - clickableArea){
                 if(map.MAP[i].i.type == "ship"){
@@ -59,23 +61,23 @@
                 } else if(map.MAP[i].i.type == "star"){
                     console.log("star clicked");
                     selectionCount++;
-                    var selectedStarName = document.createElement('input');
+                    let selectedStarName = document.createElement('input');
                     selectedStarName.type = "text";
                     selectedStarName.value = map.MAP[i].i.id;
-                    var selectedStarEconomy = document.createElement('button');
+                    let selectedStarEconomy = document.createElement('button');
                     selectedStarEconomy.type = "button";
                     selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
-                    var selectedStarIndustry = document.createElement('button');
+                    let selectedStarIndustry = document.createElement('button');
                     selectedStarIndustry.type = "button";
                     selectedStarIndustry.innerHTML = map.MAP[i].i.industry;
-                    var selectedStarScience = document.createElement('button');
+                    let selectedStarScience = document.createElement('button');
                     selectedStarScience.type = "button";
                     selectedStarScience.innerHTML = map.MAP[i].i.science;
-                    var selectedStarShips = document.createElement('button');
+                    let selectedStarShips = document.createElement('button');
                     selectedStarShips.type = "button";
                     selectedStarShips.innerHTML = map.MAP[i].i.ships;
 
-                    var selectedStar = document.createElement('div');
+                    let selectedStar = document.createElement('div');
                     selectedStar.appendChild(selectedStarName);
                     selectedStar.appendChild(selectedStarEconomy);
                     selectedStar.appendChild(selectedStarIndustry);
@@ -99,23 +101,20 @@
         }
     }
 
-    var exampleSocket = new WebSocket("ws://localhost:3001", "echo-protocol");
-    exampleSocket.onopen = function (event) {
-        exampleSocket.send("Map?");
-    };
-    exampleSocket.onmessage = function (event) {
+    socket.emit('new player');
+    socket.on('state', function(event) {
         if(event.data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(event.data);
             drawMap();
         }
-    };
+    });
 
-    function openTransmitShipOrders(originStarName){
-        var x = 0;
-        var y = 0;
-        var owner;
-        var maxShips;
-        for(var i=0; i < map.MAP.length; i++){
+    function openTransmitShipOrders(originStarName) {
+        let x = 0;
+        let y = 0;
+        let owner;
+        let maxShips;
+        for(let i=0; i < map.MAP.length; i++){
             if(map.MAP[i].i.type == "star"){
                 if(map.MAP[i].i.id == originStarName){
                     x = map.MAP[i].i.x;
@@ -128,11 +127,11 @@
         }
         canvas.onclick = onClick2;
             function onClick2(event){
-                var destinationStarName = "";
-                var numberOfShips = maxShips;
+                let destinationStarName = "";
+                let numberOfShips = maxShips;
 
-                var canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
-                var canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+                let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
+                let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
                 for(i=0; i < map.MAP.length; i++) {
                     if (map.MAP[i].i.x < canvasX + clickableArea && map.MAP[i].i.x > canvasX - clickableArea && map.MAP[i].i.y < canvasY + clickableArea && map.MAP[i].i.y > canvasY - clickableArea) {
                         if (map.MAP[i].i.type == "star") {
@@ -150,7 +149,7 @@
     }
 
     function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner){
-        var order = {order: []};
+        let order = {order: []};
         order.order.push({
             origin: originStarName,
             x: x,
@@ -160,19 +159,19 @@
             numberOfShips: numberOfShips,
             owner: owner
         });
-        exampleSocket.send(JSON.stringify(order));
+        socket.emit('player-action', JSON.stringify(order));
     }
 
     function incrementIndustry(starName, selectedStarIndustry){
-        for(var i = 0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                var owner = parseInt(map.MAP[i].i.owner);
+                let owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.industry) {
                     map.PlayerData[owner].i.credits -= map.MAP[i].i.industry;
                     map.MAP[i].i.industry += 1;
                     selectedStarIndustry.innerHTML = map.MAP[i].i.industry;
                     console.log("increment industry" + starName);
-                    var order = {order: []};
+                    let order = {order: []};
                     order.order.push({
                         id: starName,
                         type: "increment", //change research target, transmit ship orders, send player message/credits/tech
@@ -180,7 +179,7 @@
                         industry: "1",
                         economy: "0",
                     });
-                    exampleSocket.send(JSON.stringify(order));
+                    socket.emit('player-action', JSON.stringify(order));
                 }
                 break;
             }
@@ -191,13 +190,13 @@
     function incrementScience(starName, selectedStarScience){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                var owner = parseInt(map.MAP[i].i.owner);
+                let owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.science) {
                     map.PlayerData[owner].i.credits -= map.MAP[i].i.science;
                     map.MAP[i].i.science += 1;
                     selectedStarScience.innerHTML = map.MAP[i].i.science;
                     console.log("increment science" + starName);
-                    var order = {order: []};
+                    let order = {order: []};
                     order.order.push({
                         id: starName,
                         type: "increment", //change research target, transmit ship orders, send player message/credits/tech
@@ -205,7 +204,7 @@
                         industry: "0",
                         economy: "0"
                     });
-                    exampleSocket.send(JSON.stringify(order));
+                    socket.emit('player-action', JSON.stringify(order));
                 }
                 break;
             }
@@ -216,13 +215,13 @@
     function incrementEconomy(starName, selectedStarEconomy){
         for(i=0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName){
-                var owner = parseInt(map.MAP[i].i.owner);
+                let owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.economy) {
                     map.PlayerData[owner].i.credits -= map.MAP[i].i.economy;
                     map.MAP[i].i.economy += 1;
                     selectedStarEconomy.innerHTML = map.MAP[i].i.economy;
                     console.log("increment economy" + starName);
-                    var order = {order: []};
+                    let order = {order: []};
                     order.order.push({
                         id: starName,
                         type: "increment", //change research target, transmit ship orders, send player message/credits/tech
@@ -230,7 +229,7 @@
                         industry: "0",
                         economy: "1"
                     });
-                    exampleSocket.send(JSON.stringify(order));
+                    socket.emit('player-action', JSON.stringify(order));
                 }
                 break;
             }
@@ -240,7 +239,7 @@
 
     function incrementTech(tech){
         console.log("increment tech" + tech);
-        var order = {order: []};
+        let order = {order: []};
         order.order.push({
             player: starName,
             type: "increment", //change research target, transmit ship orders, send player message/credits/tech
@@ -248,7 +247,7 @@
             industry: "0",
             economy: "1"
         });
-        exampleSocket.send(JSON.stringify(order));
+        socket.emit('player-action', JSON.stringify(order));
     }
 
     function drawMap() {
@@ -256,12 +255,12 @@
         while (infoPanel.hasChildNodes()) {
             infoPanel.removeChild(infoPanel.lastChild);
         }
-        for (var i = 0; i < map.PlayerData.length; i++) {
-            var playerInfo = document.createElement('div');
+        for (let i = 0; i < map.PlayerData.length; i++) {
+            let playerInfo = document.createElement('div');
             playerInfo.innerHTML="player: " + i + ":" + map.PlayerData[i].i.credits + " weapons: " + map.PlayerData[i].i.weapons + " defense: " + map.PlayerData[i].i.defense + " terraforming: " + map.PlayerData[i].i.terraforming + " manufacturing: " + map.PlayerData[i].i.manufacturing + " range: " + map.PlayerData[i].i.range;
             infoPanel.appendChild(playerInfo);
         }
-        for(var i = 0; i < map.MAP.length; i++){
+        for(let i = 0; i < map.MAP.length; i++){
             if(map.MAP[i].i.type == "star"){
                 drawStar(map.MAP[i].i.x, map.MAP[i].i.y, map.MAP[i].i.id, map.MAP[i].i.science, map.MAP[i].i.industry, map.MAP[i].i.economy, map.MAP[i].i.ships, map.MAP[i].i.owner, ctx);
             }
@@ -289,7 +288,7 @@
         } else {
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI);
-            var gradient = ctx.createRadialGradient(x, y, 2, x, y, 8);
+            let gradient = ctx.createRadialGradient(x, y, 2, x, y, 8);
             gradient.addColorStop(0, getPlayerColor(parseInt(owner, 10)));
             gradient.addColorStop(1, "black");
             ctx.fillStyle = gradient;
@@ -348,7 +347,7 @@
     }
 
     function createResearchPanel(player){
-//        var weaponsTech = document.createElement('button');
+//        let weaponsTech = document.createElement('button');
 //        weaponsTech.type = "button";
 //        weaponsTech.innerHTML = map.PlayerData[player].i.weapons;
 //        researchPanel.appendChild(weaponsTech);
