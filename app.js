@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
     socket.emit(JSON.stringify(game.map));
   });
 
-  socket.on('player-join', (gameId) => {
+  socket.on('playerJoin', (gameId) => {
     addNewPlayer(socket, gameId);
   });
 
@@ -91,6 +91,14 @@ function generateRandomId() {
   const max = 999_999;
 
   return Math.ceil(Math.random() * (max - min) + min);
+}
+
+function addNewPlayer(socket, gameId) {
+
+}
+
+function removePlayer(socketId) {
+
 }
 
 function playerAction(socketId, data) {
