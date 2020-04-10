@@ -1,12 +1,17 @@
 const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+
+const app = express();
+const server = http.Server(app);
+const io = socketIO(server);
+
 const path = require('path');
 const favicon = require('serve-favicon');
 const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('client-sessions');
-const http = require('http');
-const socketIO = require('socket.io');
 
 const index = require('./routes/index');
 const welcome = require('./routes/welcome');
@@ -15,11 +20,10 @@ const createUser = require('./routes/createUser');
 
 const config = require('./config.js');
 
-const app = express();
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('port', 3000);
+app.set('view engine', 'pug');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -42,17 +46,6 @@ app.use('/login', login);
 app.use('/createUser', createUser);
 
 let games = [];
-
-const server = http.createServer(function(request, response) {
-  console.log((new Date()) + ' Received request for ' + request.url);
-  response.writeHead(404);
-  response.end();
-});
-server.listen(3001, function() {
-  console.log((new Date()) + ' Server is listening on port 3001');
-});
-
-const io = socketIO(server, {});
 
 io.on('connection', (socket) => {
   socket.on('createNewGame', () => {
@@ -489,4 +482,4 @@ function playerAction(socketId, data) {
     }
   }
 
-  module.exports = app;
+module.exports = {app: app, server: server};
