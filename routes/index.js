@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
 router.get('/', function(req, res, next) {
-  res.sendfile("views/index.html"); //I don't want to waste time rendering this page, so I just wrote it in HTML
+  res.sendFile( "views/index.html",{ root: '.' }); //I don't want to waste time rendering this page, so I just wrote it in HTML
 });
 
 module.exports = router;

@@ -5,8 +5,8 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const session = require('client-sessions');
-const socketIO = require('socket.io');
 const http = require('http');
+const socketIO = require('socket.io');
 
 const index = require('./routes/index');
 const welcome = require('./routes/welcome');
@@ -88,7 +88,7 @@ function createNewGame(socket) {
 
 function generateRandomId() {
   const min = 0;
-  const max = 999_999;
+  const max = 999999;
 
   return Math.ceil(Math.random() * (max - min) + min);
 }
@@ -140,7 +140,7 @@ function playerAction(socketId, data) {
     });
   });
 
-  setInterval(gameLoop, 60_000);
+  setInterval(gameLoop, 60000);
 
   function gameLoop() {
     games.forEach(game => {
