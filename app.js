@@ -45,7 +45,7 @@ app.use('/welcome', welcome);
 app.use('/login', login);
 app.use('/createUser', createUser);
 
-let games = [];
+const games = require('./Games');
 
 io.on('connection', (socket) => {
   socket.on('createNewGame', () => {
