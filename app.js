@@ -133,7 +133,7 @@ function playerAction(socketId, data) {
     });
   });
 
-  setInterval(gameLoop, 60000);
+  setInterval(gameLoop, 6000);
 
   function gameLoop() {
     games.forEach(game => {
@@ -146,7 +146,7 @@ function playerAction(socketId, data) {
             let industry = parseInt(map.MAP[i].i.industry, 10);
             let ships = parseInt(map.MAP[i].i.ships, 10);
             let owner = parseInt(map.MAP[i].i.owner);
-            let manufacturingTech = getManufacturingTech(owner);
+            let manufacturingTech = getManufacturingTech(game, owner);
             map.MAP[i].i.ships = ships + industry * manufacturingTech;
             map.PlayerData[owner].i.credits = parseInt(map.MAP[i].i.economy) + parseInt(map.PlayerData[owner].i.credits);
           }
@@ -172,7 +172,7 @@ function playerAction(socketId, data) {
                     map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
                   } else {
                     //ship combat
-                    shipCombat(map.MAP[starIndex].i, map.MAP[i].i);
+                    shipCombat(game, map.MAP[starIndex].i, map.MAP[i].i);
                   }
                   map.MAP.splice(i, 1);
                 }
@@ -211,6 +211,7 @@ function playerAction(socketId, data) {
           }
         }
         game.sockets.forEach((socket) => {
+          console.log("sending state " + game.id + " " + socket.id);
           io.to(socket).emit('state', JSON.stringify(map))
         });
       }
@@ -221,26 +222,26 @@ function playerAction(socketId, data) {
     return Math.hypot((x0-x1), (y0-y1));
   }
 
-  function getManufacturingTech(player) {
-    for(let i = 0; i < map.PlayerData.length; i++) {
-      if(player == parseInt(map.PlayerData[i].i.id, 10)) {
-        return parseInt(map.PlayerData[i].i.manufacturing, 10);
+  function getManufacturingTech(game, player) {
+    for(let i = 0; i < game.map.PlayerData.length; i++) {
+      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
+        return parseInt(game.map.PlayerData[i].i.manufacturing, 10);
       }
     }
   }
 
-  function getWeaponsTech(player) {
-    for(let i = 0; i < map.PlayerData.length; i++) {
-      if(player == parseInt(map.PlayerData[i].i.id, 10)) {
-        return parseInt(map.PlayerData[i].i.weapons, 10);
+  function getWeaponsTech(game, player) {
+    for(let i = 0; i < game.map.PlayerData.length; i++) {
+      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
+        return parseInt(game.map.PlayerData[i].i.weapons, 10);
       }
     }
   }
 
-  function getDefenseTech(player) {
-    for(var i = 0; i < map.PlayerData.length; i++) {
-      if(player == parseInt(map.PlayerData[i].i.id, 10)) {
-        return parseInt(map.PlayerData[i].i.defense, 10);
+  function getDefenseTech(game, player) {
+    for(var i = 0; i < game.map.PlayerData.length; i++) {
+      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
+        return parseInt(game.map.PlayerData[i].i.defense, 10);
       }
     }
   }
@@ -460,13 +461,13 @@ function playerAction(socketId, data) {
     }
   }
 
-  function shipCombat(defender, attacker) {
+  function shipCombat(game, defender, attacker) {
     let defenderShips = defender.ships;
-    let defenderWeaponsTech = getWeaponsTech(defender.owner);
-    let defenderDefenseTech = getDefenseTech(defender.owner);
+    let defenderWeaponsTech = getWeaponsTech(game, defender.owner);
+    let defenderDefenseTech = getDefenseTech(game, defender.owner);
     let attackerShips = attacker.ships;
-    let attackerWeaponsTech = getWeaponsTech(attacker.owner);
-    let attackerDefenseTech = getDefenseTech(attacker.owner);
+    let attackerWeaponsTech = getWeaponsTech(game, attacker.owner);
+    let attackerDefenseTech = getDefenseTech(game, attacker.owner);
 
     while(defenderShips > 0 && attackerShips > 0) {
       let attackingDamage = attackerShips*attackerWeaponsTech/defenderDefenseTech;

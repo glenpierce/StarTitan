@@ -47,10 +47,10 @@
 
     function showGameSelectDialog(games) {
         console.log(games);
-        gameSelectDialog = document.createElement("div");
+        let gameSelectDialog = document.createElement("div");
         gameSelectDialog.id ="gameSelectDialog";
         games.forEach((game) => {
-            gameButton = document.createElement("div");
+            let gameButton = document.createElement("div");
             gameButton.textContent = game;
             gameButton.addEventListener("click", function () {
                 selectGame(game);
@@ -59,7 +59,7 @@
             gameSelectDialog.append(gameButton);
         });
 
-        createGameButton = document.createElement("div");
+        let createGameButton = document.createElement("div");
         createGameButton.textContent = "Create new game";
         createGameButton.addEventListener("click", function () {
             socket.emit("createNewGame");
@@ -148,6 +148,8 @@
     }
 
     socket.on('state', function(event) {
+        console.log("receiving state");
+        console.log(event);
         if(event.data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(event.data);
             drawMap();
