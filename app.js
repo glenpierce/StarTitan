@@ -73,7 +73,7 @@ function createNewGame(socket) {
   game.players = [];
   game.sockets = [socket];
   game.map = {MAP:[],PlayerData:[]};
-  setupGame(map);
+  setupGame(game.map);
   game.shipSpeed = 20;
   game.gameSpeed = 1000;
   return game;
