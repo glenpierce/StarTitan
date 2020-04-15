@@ -19,7 +19,7 @@
     </div>
 </div>
 
-<div id="playerData"></div>
+<div id="playerData" style="color: white; font-family: monospace;"></div>
 <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script src="/javascripts/socket.io.dev.js"></script>
 <script>
@@ -31,6 +31,52 @@
     let map;
     let clickableArea = 20;
     const socket = io();
+
+    window.onload = function(onloadEvent) {
+        let xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 3) {
+            } else if (xhr.readyState == 4 && xhr.status == 200) {
+                showGameSelectDialog(JSON.parse(xhr.responseText));
+            }
+        };
+        xhr.open("GET", "http://localhost:3000/getGames", true);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhr.send();
+    };
+
+    function showGameSelectDialog(games) {
+        console.log(games);
+        gameSelectDialog = document.createElement("div");
+        gameSelectDialog.id ="gameSelectDialog";
+        games.forEach((game) => {
+            gameButton = document.createElement("div");
+            gameButton.textContent = game;
+            gameButton.addEventListener("click", function () {
+                selectGame(game);
+                hideModal("gameSelectDialog");
+            });
+            gameSelectDialog.append(gameButton);
+        });
+
+        createGameButton = document.createElement("div");
+        createGameButton.textContent = "Create new game";
+        createGameButton.addEventListener("click", function () {
+            socket.emit("createNewGame");
+            hideModal("gameSelectDialog");
+        });
+        gameSelectDialog.append(createGameButton);
+
+        document.getElementById("playerData").append(gameSelectDialog);
+    }
+
+    function hideModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    function selectGame(gameId) {
+        socket.emit('playerJoin', gameId);
+    }
 
     let selectionPanel = document.getElementById("selectionPanel");
     let infoPanel = document.getElementById("infoPanel");
@@ -101,7 +147,6 @@
         }
     }
 
-    socket.emit('playerJoin');
     socket.on('state', function(event) {
         if(event.data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(event.data);

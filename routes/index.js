@@ -11,4 +11,14 @@ router.get('/test', function (req, res, next) {
   res.send(JSON.stringify(games, null, 2));
 });
 
+router.get('/getGames', function (req, res, next) {
+  res.type('application/json');
+  let gameIds = [];
+  games.forEach(game => {
+    gameIds.push(game.id);
+  });
+
+  res.send(gameIds);
+});
+
 module.exports = router;
