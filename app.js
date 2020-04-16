@@ -76,6 +76,7 @@ function createNewGame(socket) {
   setupGame(game.map);
   game.shipSpeed = 20;
   game.gameSpeed = 1000;
+  addNewPlayer(socket, game.id);
   return game;
 }
 
@@ -87,7 +88,9 @@ function generateRandomId() {
 }
 
 function addNewPlayer(socket, gameId) {
-
+  console.log("addNewPlayer");
+  console.log(socket.id);
+  console.log(gameId);
 }
 
 function removePlayer(socketId) {
@@ -211,8 +214,8 @@ function playerAction(socketId, data) {
           }
         }
         game.sockets.forEach((socket) => {
-          console.log("sending state " + game.id + " " + socket.id);
-          io.to(socket).emit('state', JSON.stringify(map))
+          // console.log("sending state " + game.id + " " + socket.id);
+          socket.emit('state', JSON.stringify(map))
         });
       }
     });

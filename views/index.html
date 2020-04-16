@@ -147,11 +147,10 @@
         }
     }
 
-    socket.on('state', function(event) {
-        console.log("receiving state");
-        console.log(event);
-        if(event.data.toString().substring(2,5) == "MAP") {
-            map = JSON.parse(event.data);
+    socket.on('state', function(data) {
+        console.log(data);
+        if(data.toString().substring(2,5) == "MAP") {
+            map = JSON.parse(data);
             drawMap();
         }
     });
@@ -235,7 +234,7 @@
     }
 
     function incrementScience(starName, selectedStarScience) {
-        for(i=0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName) {
                 let owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.science) {
@@ -260,7 +259,7 @@
     }
 
     function incrementEconomy(starName, selectedStarEconomy) {
-        for(i=0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.id == starName) {
                 let owner = parseInt(map.MAP[i].i.owner);
                 if(map.PlayerData[owner].i.credits >= map.MAP[i].i.economy) {
@@ -353,7 +352,7 @@
         ctx.lineTo(x-4,y-3);
         ctx.lineTo(x-4,y+3);
         ctx.fill();
-        for(i=0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].i.type=="star") {
                 if(map.MAP[i].i.id == destination) {
                     ctx.strokeStyle=getPlayerColor(parseInt(owner, 10));
