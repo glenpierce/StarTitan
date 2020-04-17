@@ -75,7 +75,7 @@ function createNewGame(socket) {
   game.id = generateRandomId();
   newestGameId = game.id;
   game.players = [];
-  game.sockets = [socket];
+  game.sockets = [];
   game.map = {MAP:[],PlayerData:[]};
   setupGame(game.map);
   game.shipSpeed = 20;
@@ -93,6 +93,8 @@ function generateRandomId() {
 function addNewPlayer(socket, gameId) {
   let game = getGameById(gameId);
   game.players.push(socket.id);
+  game.sockets.push(socket);
+  game.map.PlayerData[game.players.length - 1].id = socket.id;
 }
 
 function getGameById(gameId) {
@@ -151,7 +153,7 @@ function playerAction(socketId, gameId, data) {
     });
   });
 
-  setInterval(gameLoop, 6000);
+  setInterval(gameLoop, 1000);
 
   function gameLoop() {
     games.forEach(game => {
@@ -160,25 +162,25 @@ function playerAction(socketId, gameId, data) {
       } else {
         let map = game.map;
         for (let i = 0; i < map.MAP.length; i++) {
-          if (map.MAP[i].i.type == "star") {
-            let industry = parseInt(map.MAP[i].i.industry, 10);
-            let ships = parseInt(map.MAP[i].i.ships, 10);
-            let owner = parseInt(map.MAP[i].i.owner);
+          if (map.MAP[i].type == "star") {
+            let industry = parseInt(map.MAP[i].industry, 10);
+            let ships = parseInt(map.MAP[i].ships, 10);
+            let owner = parseInt(map.MAP[i].owner);
             let manufacturingTech = getManufacturingTech(game, owner);
-            map.MAP[i].i.ships = ships + industry * manufacturingTech;
-            map.PlayerData[owner].i.credits = parseInt(map.MAP[i].i.economy) + parseInt(map.PlayerData[owner].i.credits);
+            map.MAP[i].ships = ships + industry * manufacturingTech;
+            map.PlayerData[owner].credits = parseInt(map.MAP[i].economy) + parseInt(map.PlayerData[owner].credits);
           }
-          if (map.MAP[i].i.type == "ship") {
-            if (map.MAP[i].i.destination != "null") {
-              let shipX = parseInt(map.MAP[i].i.x, 10);
-              let shipY = parseInt(map.MAP[i].i.y, 10);
+          if (map.MAP[i].type == "ship") {
+            if (map.MAP[i].destination != "null") {
+              let shipX = parseInt(map.MAP[i].x, 10);
+              let shipY = parseInt(map.MAP[i].y, 10);
               let destinationX = 0;
               let destinationY = 0;
               let starIndex = -1;
               for (let j = 0; j < map.MAP.length; j++) {
-                if (map.MAP[j].i.id == map.MAP[i].i.destination) {
-                  destinationX = parseInt(map.MAP[j].i.x, 10);
-                  destinationY = parseInt(map.MAP[j].i.y, 10);
+                if (map.MAP[j].id == map.MAP[i].destination) {
+                  destinationX = parseInt(map.MAP[j].x, 10);
+                  destinationY = parseInt(map.MAP[j].y, 10);
                   starIndex = j;
                   j = map.MAP.length;
                 }
@@ -186,42 +188,42 @@ function playerAction(socketId, gameId, data) {
               console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
               if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= game.shipSpeed) {
                 if (starIndex != -1) {
-                  if (map.MAP[starIndex].i.owner == map.MAP[i].i.owner) {
-                    map.MAP[starIndex].i.ships = parseInt(map.MAP[starIndex].i.ships, 10) + parseInt(map.MAP[i].i.ships, 10);
+                  if (map.MAP[starIndex].owner == map.MAP[i].owner) {
+                    map.MAP[starIndex].ships = parseInt(map.MAP[starIndex].ships, 10) + parseInt(map.MAP[i].ships, 10);
                   } else {
                     //ship combat
-                    shipCombat(game, map.MAP[starIndex].i, map.MAP[i].i);
+                    shipCombat(game, map.MAP[starIndex], map.MAP[i]);
                   }
                   map.MAP.splice(i, 1);
                 }
               } else {
                 if (shipX > destinationX && shipY > destinationY) {
                   const angle = Math.atan((shipX - destinationX) / (shipY - destinationY));
-                  map.MAP[i].i.x = shipX - Math.sin(angle) * game.shipSpeed;
-                  map.MAP[i].i.y = shipY - Math.cos(angle) * game.shipSpeed;
+                  map.MAP[i].x = shipX - Math.sin(angle) * game.shipSpeed;
+                  map.MAP[i].y = shipY - Math.cos(angle) * game.shipSpeed;
                 } else if (shipX > destinationX && shipY < destinationY) {
                   const angle = Math.atan((shipX - destinationX) / (destinationY - shipY));
-                  map.MAP[i].i.x = shipX - Math.sin(angle) * game.shipSpeed;
-                  map.MAP[i].i.y = shipY + Math.cos(angle) * game.shipSpeed;
+                  map.MAP[i].x = shipX - Math.sin(angle) * game.shipSpeed;
+                  map.MAP[i].y = shipY + Math.cos(angle) * game.shipSpeed;
                 } else if (shipX < destinationX && shipY > destinationY) { //this is wrong somewhere
                   const angle = Math.atan((destinationX - shipX) / (shipY - destinationY));
-                  map.MAP[i].i.x = shipX + Math.sin(angle) * game.shipSpeed;
-                  map.MAP[i].i.y = shipY - Math.cos(angle) * game.shipSpeed;
+                  map.MAP[i].x = shipX + Math.sin(angle) * game.shipSpeed;
+                  map.MAP[i].y = shipY - Math.cos(angle) * game.shipSpeed;
                 } else if (shipX < destinationX && shipY < destinationY) {
                   const angle = Math.atan((destinationY - shipY) / (destinationX - shipX));
-                  map.MAP[i].i.x = shipX + Math.sin(angle) * game.shipSpeed;
-                  map.MAP[i].i.y = shipY + Math.cos(angle) * game.shipSpeed;
+                  map.MAP[i].x = shipX + Math.sin(angle) * game.shipSpeed;
+                  map.MAP[i].y = shipY + Math.cos(angle) * game.shipSpeed;
                 } else if (shipX == destinationX) {
                   if (shipY > destinationY) {
-                    map.MAP[i].i.y = shipY - game.shipSpeed;
+                    map.MAP[i].y = shipY - game.shipSpeed;
                   } else {
-                    map.MAP[i].i.y = shipY + game.shipSpeed;
+                    map.MAP[i].y = shipY + game.shipSpeed;
                   }
                 } else if (shipY == destinationY) {
                   if (shipX > destinationX) {
-                    map.MAP[i].i.x = shipX - game.shipSpeed;
+                    map.MAP[i].x = shipX - game.shipSpeed;
                   } else {
-                    map.MAP[i].i.x = shipX + game.shipSpeed;
+                    map.MAP[i].x = shipX + game.shipSpeed;
                   }
                 }
               }
@@ -242,30 +244,30 @@ function playerAction(socketId, gameId, data) {
 
   function getManufacturingTech(game, player) {
     for(let i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
-        return parseInt(game.map.PlayerData[i].i.manufacturing, 10);
+      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
+        return parseInt(game.map.PlayerData[i].manufacturing, 10);
       }
     }
   }
 
   function getWeaponsTech(game, player) {
     for(let i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
-        return parseInt(game.map.PlayerData[i].i.weapons, 10);
+      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
+        return parseInt(game.map.PlayerData[i].weapons, 10);
       }
     }
   }
 
   function getDefenseTech(game, player) {
-    for(var i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].i.id, 10)) {
-        return parseInt(game.map.PlayerData[i].i.defense, 10);
+    for(let i = 0; i < game.map.PlayerData.length; i++) {
+      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
+        return parseInt(game.map.PlayerData[i].defense, 10);
       }
     }
   }
 
   function setupGame(map) {
-    var starNamesList = ["Ain", "Acamar", "Acrux", "Albireo", "Alcor", "Altais", "Betria", "Caph", "Chara", "Dabih",
+    const starNamesList = ["Ain", "Acamar", "Acrux", "Albireo", "Alcor", "Altais", "Betria", "Caph", "Chara", "Dabih",
       "Decrux", "Diphda", "Duhr", "Enif", "Errai", "Furud", "Gatria", "Giedi", "Hadar", "Heka",
       "Kajam", "Kastra", "Keid", "Kraz", "Kuma", "Maasym", "Maia", "Markab", "Gemini", "Cetus",
       "Corvus", "Naos", "Pherkad", "Polaris", "Pollux", "Rana", "Regor", "Rigel", "Sabik", "Zain"];
@@ -301,42 +303,57 @@ function playerAction(socketId, gameId, data) {
           yMax = 300;
           break;
       }
+      let x;
+      let y;
+
       for (j = 0; j < 10; j++) {
-        let x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
-        let y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
+        x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
+        y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
 
         map.MAP.push({
-          "i": {
-            id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
-            type: "star",
-            ships: "5",
-            destination: "null",
-            x: x,
-            y: y,
-            resourceBase: "10",
-            science: 1,
-            industry: 1,
-            economy: 1,
-            owner: i
-          }
+          id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
+          type: "star",
+          ships: "5",
+          destination: "null",
+          x: x,
+          y: y,
+          resourceBase: "10",
+          science: 0,
+          industry: 0,
+          economy: 0,
+          owner: 0
         });
       }
+
+      x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
+      y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
+
+      map.MAP.push({
+        id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
+        type: "star",
+        ships: "5",
+        destination: "null",
+        x: x,
+        y: y,
+        resourceBase: "10",
+        science: 1,
+        industry: 1,
+        economy: 1,
+        owner: i
+      });
     }
 
     //map.MAP.push({
-    //  "i": {
-    //    id: "ship",
-    //    type: "ship",
-    //    ships: 5,
-    //    destination: "Orion",
-    //    x: 200,
-    //    y: 200,
-    //    owner: "4"
-    //  }
+  //    id: "ship",
+  //    type: "ship",
+  //    ships: 5,
+  //    destination: "Orion",
+  //    x: 200,
+  //    y: 200,
+  //    owner: "4"
     //});
     //
     //map.MAP.push({
-    //  "i": {
     //    id: "ship",
     //    type: "ship",
     //    ships: 5,
@@ -344,11 +361,9 @@ function playerAction(socketId, gameId, data) {
     //    x: 500,
     //    y: 500,
     //    owner: "4"
-    //  }
     //});
     //
     //map.MAP.push({
-    //  "i": {
     //    id: "ship",
     //    type: "ship",
     //    ships: 5,
@@ -356,11 +371,9 @@ function playerAction(socketId, gameId, data) {
     //    x: 200,
     //    y: 500,
     //    owner: "4"
-    //  }
     //});
     //
     //map.MAP.push({
-    //  "i": {
     //    id: "ship",
     //    type: "ship",
     //    ships: 5,
@@ -368,37 +381,32 @@ function playerAction(socketId, gameId, data) {
     //    x: 500,
     //    y: 200,
     //    owner: "4"
-    //  }
     //});
     //
     map.MAP.push({
-      "i": {
-        id: "Orion",
-        type: "star",
-        ships: 5,
-        destination: "null",
-        x: 300,
-        y: 300,
-        resourceBase: "10",
-        science: "1",
-        industry: "1",
-        economy: "1",
-        owner: 0
-      }
+      id: "Orion",
+      type: "star",
+      ships: 5,
+      destination: "null",
+      x: 300,
+      y: 300,
+      resourceBase: "10",
+      science: "0",
+      industry: "0",
+      economy: "0",
+      owner: 0
     });
 
     for(let i = 0; i < 5; i++)
     {
       map.PlayerData.push({
-        "i": {
-          id: i,
-          credits: 0,
-          range: 1,
-          weapons: 1,
-          defense: 1,
-          terraforming: 1,
-          manufacturing: 1
-        }
+        id: i,
+        credits: 0,
+        range: 1,
+        weapons: 1,
+        defense: 1,
+        terraforming: 1,
+        manufacturing: 1
       });
     }
 
@@ -421,32 +429,30 @@ function playerAction(socketId, gameId, data) {
 
   function transmitShipOrdersServer(socketId, game, order) {
     for(let i = 0; i < game.map.MAP.length; i++) {
-      if (game.map.MAP[i].i.type == "star") {
-        if (game.map.MAP[i].i.id == order.order[0].origin) {
-          game.map.MAP[i].i.ships = parseInt(game.map.MAP[i].i.ships, 10) - parseInt(order.order[0].numberOfShips, 10);
+      if (game.map.MAP[i].type == "star") {
+        if (game.map.MAP[i].id == order.order[0].origin) {
+          game.map.MAP[i].ships = parseInt(game.map.MAP[i].ships, 10) - parseInt(order.order[0].numberOfShips, 10);
           break;
         }
       }
     }
     game.map.MAP.push({
-      "i": {
-        type: "ship",
-        ships: order.order[0].numberOfShips,
-        destination: order.order[0].destination[0],
-        x: order.order[0].x,
-        y: order.order[0].y,
-        owner: order.order[0].owner
-      }
+      type: "ship",
+      ships: order.order[0].numberOfShips,
+      destination: order.order[0].destination[0],
+      x: order.order[0].x,
+      y: order.order[0].y,
+      owner: order.order[0].owner
     });
   }
 
   function incrementIndustryServer(socketId, game, order) {
     for(let i = 0; i < game.map.MAP.length; i++) {
-      if(game.map.MAP[i].i.id == order.order[0].id) {
-        const owner = parseInt(game.map.MAP[i].i.owner);
-        if(game.map.PlayerData[owner].i.credits >= game.map.MAP[i].i.industry) {
-          game.map.PlayerData[owner].i.credits -= game.map.MAP[i].i.industry;
-          game.map.MAP[i].i.industry = parseInt(game.map.MAP[i].i.industry, 10) + 1;
+      if(game.map.MAP[i].id == order.order[0].id) {
+        const owner = parseInt(game.map.MAP[i].owner);
+        if(game.map.PlayerData[owner].credits >= game.map.MAP[i].industry) {
+          game.map.PlayerData[owner].credits -= game.map.MAP[i].industry;
+          game.map.MAP[i].industry = parseInt(game.map.MAP[i].industry, 10) + 1;
         }
         break;
       }
@@ -455,11 +461,11 @@ function playerAction(socketId, gameId, data) {
 
   function incrementScienceServer(socketId, game, order) {
     for(let i = 0; i < game.map.MAP.length; i++) {
-      if(game.map.MAP[i].i.id == order.order[0].id) {
-        const owner = parseInt(game.map.MAP[i].i.owner);
-        if(game.map.PlayerData[owner].i.credits >= game.map.MAP[i].i.science) {
-          game.map.PlayerData[owner].i.credits -= game.map.MAP[i].i.science;
-          game.map.MAP[i].i.science = parseInt(game.map.MAP[i].i.science, 10) + 1;
+      if(game.map.MAP[i].id == order.order[0].id) {
+        const owner = parseInt(game.map.MAP[i].owner);
+        if(game.map.PlayerData[owner].credits >= game.map.MAP[i].science) {
+          game.map.PlayerData[owner].credits -= game.map.MAP[i].science;
+          game.map.MAP[i].science = parseInt(game.map.MAP[i].science, 10) + 1;
         }
         break;
       }
@@ -468,11 +474,11 @@ function playerAction(socketId, gameId, data) {
 
   function incrementEconomyServer(socketId, game, order) {
     for(let i = 0; i < game.map.MAP.length; i++) {
-      if(game.map.MAP[i].i.id == order.order[0].id) {
-        const owner = parseInt(game.map.MAP[i].i.owner);
-        if(game.map.PlayerData[owner].i.credits >= game.map.MAP[i].i.economy) {
-          game.map.PlayerData[owner].i.credits -= game.map.MAP[i].i.economy;
-          game.map.MAP[i].i.economy = parseInt(game.map.MAP[i].i.economy, 10) + 1;
+      if(game.map.MAP[i].id == order.order[0].id) {
+        const owner = parseInt(game.map.MAP[i].owner);
+        if(game.map.PlayerData[owner].credits >= game.map.MAP[i].economy) {
+          game.map.PlayerData[owner].credits -= game.map.MAP[i].economy;
+          game.map.MAP[i].economy = parseInt(game.map.MAP[i].economy, 10) + 1;
         }
         break;
       }
