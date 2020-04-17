@@ -306,7 +306,7 @@ function playerAction(socketId, gameId, data) {
       let x;
       let y;
 
-      for (j = 0; j < 10; j++) {
+      for (j = 0; j < 9; j++) {
         x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
         y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
 
