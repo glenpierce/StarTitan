@@ -49,6 +49,28 @@ const games = require('./Games');
 
 let newestGameId;
 
+class Game {
+  constructor() {
+    this.id;
+    this.players = [];
+    this.sockets = [];
+    this.map = {MAP: [], PlayerData: []};
+    this.shipSpeed;
+    this.gameSpeed;
+  }
+
+  getPlayerById(socketId) {
+    console.log("gamePlayerById: " + socketId);
+    for(let i = 0; i < this.map.PlayerData.length; i++) {
+      console.log(this.map.PlayerData[i]);
+      if (this.map.PlayerData[i].id == socketId)
+        return this.map.PlayerData[i];
+      if(this.map.PlayerData[i].id == socketId.toString().substring(2))
+        return this.map.PlayerData[i];
+    }
+  }
+}
+
 io.on('connection', (socket) => {
   socket.on('createNewGame', () => {
     let game = createNewGame(socket);
@@ -62,6 +84,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('playerAction', (gameId, data) => {
+    console.log("playerAction socket.id = " + socket.id);
     playerAction(socket.id, gameId, data);
   });
 
@@ -71,12 +94,9 @@ io.on('connection', (socket) => {
 });
 
 function createNewGame(socket) {
-  let game = {};
+  let game = new Game();
   game.id = generateRandomId();
   newestGameId = game.id;
-  game.players = [];
-  game.sockets = [];
-  game.map = {MAP:[],PlayerData:[]};
   setupGame(game.map);
   game.shipSpeed = 20;
   game.gameSpeed = 1000;
@@ -95,6 +115,7 @@ function addNewPlayer(socket, gameId) {
   game.players.push(socket.id);
   game.sockets.push(socket);
   game.map.PlayerData[game.players.length - 1].id = socket.id;
+  socket.emit('playerAdded', gameId);
 }
 
 function getGameById(gameId) {
@@ -169,6 +190,10 @@ function playerAction(socketId, gameId, data) {
             let manufacturingTech = getManufacturingTech(game, owner);
             map.MAP[i].ships = ships + industry * manufacturingTech;
             map.PlayerData[owner].credits = parseInt(map.MAP[i].economy) + parseInt(map.PlayerData[owner].credits);
+            if(isNaN(map.PlayerData[owner].researchPoints))
+              map.PlayerData[owner].researchPoints = "0";
+            map.PlayerData[owner].researchPoints = parseInt(map.MAP[i].science) + parseInt(map.PlayerData[owner].researchPoints);
+            console.log(map.PlayerData[owner].id + ": " + map.PlayerData[owner].researchPoints);
           }
           if (map.MAP[i].type == "ship") {
             if (map.MAP[i].destination != "null") {
@@ -185,8 +210,8 @@ function playerAction(socketId, gameId, data) {
                   j = map.MAP.length;
                 }
               }
-              console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistancebetween(shipX, shipY, destinationX, destinationY));
-              if (getDistancebetween(shipX, shipY, destinationX, destinationY) <= game.shipSpeed) {
+              console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistanceBetween(shipX, shipY, destinationX, destinationY));
+              if (getDistanceBetween(shipX, shipY, destinationX, destinationY) <= game.shipSpeed) {
                 if (starIndex != -1) {
                   if (map.MAP[starIndex].owner == map.MAP[i].owner) {
                     map.MAP[starIndex].ships = parseInt(map.MAP[starIndex].ships, 10) + parseInt(map.MAP[i].ships, 10);
@@ -230,6 +255,14 @@ function playerAction(socketId, gameId, data) {
             }
           }
         }
+        map.PlayerData.forEach(player => {
+          if(player.researchTarget != null) {
+            if (player[player.researchTarget] < player.researchPoints / 10) {
+              player[player.researchTarget]++;
+              player.researchPoints -= player[player.researchTarget] * 10;
+            }
+          }
+        });
         game.sockets.forEach((socket) => {
           // console.log("sending state " + game.id + " " + socket.id);
           socket.emit('state', JSON.stringify(map))
@@ -238,7 +271,7 @@ function playerAction(socketId, gameId, data) {
     });
   }
 
-  function getDistancebetween(x0, y0, x1, y1) {
+  function getDistanceBetween(x0, y0, x1, y1) {
     return Math.hypot((x0-x1), (y0-y1));
   }
 
@@ -306,7 +339,7 @@ function playerAction(socketId, gameId, data) {
       let x;
       let y;
 
-      for (j = 0; j < 9; j++) {
+      for (j = 0; j < 1; j++) {
         x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
         y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
 
@@ -321,7 +354,7 @@ function playerAction(socketId, gameId, data) {
           science: 0,
           industry: 0,
           economy: 0,
-          owner: 0
+          owner: 4
         });
       }
 
@@ -331,7 +364,7 @@ function playerAction(socketId, gameId, data) {
       map.MAP.push({
         id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
         type: "star",
-        ships: "5",
+        ships: "0",
         destination: "null",
         x: x,
         y: y,
@@ -394,11 +427,10 @@ function playerAction(socketId, gameId, data) {
       science: "0",
       industry: "0",
       economy: "0",
-      owner: 0
+      owner: 4
     });
 
-    for(let i = 0; i < 5; i++)
-    {
+    for(let i = 0; i < 5; i++) {
       map.PlayerData.push({
         id: i,
         credits: 0,
@@ -424,6 +456,8 @@ function playerAction(socketId, gameId, data) {
       }
     } else if(order.order[0].type == "shipOrder") {
       transmitShipOrdersServer(socketId, game, order);
+    } else if(order.order[0].type =="researchTarget") {
+      game.getPlayerById(socketId).researchTarget = order.order[0].tech;
     }
   }
 

@@ -80,6 +80,10 @@
         socket.emit('playerJoin', selectedGameId);
     }
 
+    socket.on('playerAdded', function(data) {
+        gameId = data;
+    });
+
     let selectionPanel = document.getElementById("selectionPanel");
     let infoPanel = document.getElementById("infoPanel");
 
@@ -95,8 +99,8 @@
     function onClick(event) {
         let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
         let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
-        socket.emit("click(" + canvasX +", "+ canvasY +")");
-        console.log("click(" + canvasX +", "+ canvasY +")");
+        socket.emit("click(" + canvasX + ", " + canvasY + ")");
+        console.log("click(" + canvasX + ", " + canvasY + ")");
         while (selectionPanel.hasChildNodes()) {
             selectionPanel.removeChild(selectionPanel.lastChild);
         }
@@ -150,7 +154,7 @@
     }
 
     socket.on('state', function(data) {
-        console.log(data);
+        // console.log(data);
         if(data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(data);
             drawMap();
@@ -285,15 +289,13 @@
         drawMap();
     }
 
-    function incrementTech(tech) {
-        console.log("increment tech" + tech);
+    function setResearchTarget(tech) {
+        console.log("set research target " + tech);
         let order = {order: []};
         order.order.push({
-            player: starName,
-            type: "increment", //change research target, transmit ship orders, send player message/credits/tech
-            science: "0",
-            industry: "0",
-            economy: "1"
+            player: getThisPlayer().id,
+            type: "researchTarget", //change research target, transmit ship orders, send player message/credits/tech
+            tech: tech
         });
         socket.emit('playerAction', gameId, JSON.stringify(order));
     }
@@ -328,7 +330,7 @@
         if(ships > 0) {
             ctx.fillText(ships, x, y + 23);
         }
-        if(owner == 0) {
+        if(owner == 4) {
             ctx.drawImage(avgWhiteStar, x - 18, y - 12);
         } else {
             ctx.fillText(economy, x - 7, y - 12);
@@ -394,11 +396,22 @@
         }
     }
 
-    function createResearchPanel(player) {
-//        let weaponsTech = document.createElement('button');
-//        weaponsTech.type = "button";
-//        weaponsTech.innerHTML = map.PlayerData[player].weapons;
-//        researchPanel.appendChild(weaponsTech);
+    function getThisPlayer() {
+        for (let i = 0; i < map.PlayerData.length; i++) {
+            if (map.PlayerData[i].id.toString().substring(3) == socket.id)
+                return map.PlayerData[i];
+        }
+        return {id:socket.id};
+    }
+
+    function createResearchPanel() {
+       let weaponsTech = document.createElement('button');
+       weaponsTech.type = "button";
+       weaponsTech.innerHTML = "weapons";
+       weaponsTech.addEventListener('click', function (event) {
+           setResearchTarget('weapons');
+       });
+       researchPanel.appendChild(weaponsTech);
     }
 </script>
 </body>
