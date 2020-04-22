@@ -7,33 +7,34 @@
 <body style="background-color:black">
 <br>
 <div id="selectionPanel" style="width:100px; position: fixed;"></div>
-<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;"></div>
-<div id="researchPanelContainer" style="position: fixed; bottom: 0; display: flex; justify-content: flex-end; width: 100%;">
-    <div id="researchPanel" style="color: white; font-family: monospace;">
-        <div style="display: flex;"  onclick="setResearchTarget('weapons')">
-            <div>Weapons</div>
-            <div id="weaponsValue"></div>
-        </div>
-        <div style="display: flex;"  onclick="setResearchTarget('defense')">
-            <div>Defense</div>
-            <div id="defenseValue"></div>
-        </div>
-        <div style="display: flex"  onclick="setResearchTarget('terraforming')">
-            <div>Terraforming</div>
-            <div id="terraformingValue"></div>
-        </div>
-        <div style="display: flex;" onclick="setResearchTarget('manufacturing')">
-            <div>Manufacturing</div>
-            <div id="manufacturingValue"></div>
-        </div>
-        <div style="display: flex"  onclick="setResearchTarget('range')">
-            <div>Range</div>
-            <div id="rangeValue"></div>
-        </div>
-        <div style="display: flex;" onclick="setResearchTarget('scanning')">
-            <div>Scanning</div>
-            <div id="scanningValue"></div>
-        </div>
+<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;">
+    <div style="display: flex; padding: 8px;">
+        <div style="padding-right: 4px;">Credits</div>
+        <div id="creditsValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')">
+        <div style="padding-right: 4px;">Weapons</div>
+        <div id="weaponsValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')">
+        <div style="padding-right: 4px;">Defense</div>
+        <div id="defenseValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')">
+        <div style="padding-right: 4px;">Terraforming</div>
+        <div id="terraformingValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')">
+        <div style="padding-right: 4px;">Manufacturing</div>
+        <div id="manufacturingValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')">
+        <div style="padding-right: 4px;">Range</div>
+        <div id="rangeValue"></div>
+    </div>
+    <div style="display: flex; padding: 8px;" onclick="setResearchTarget('scanning')">
+        <div style="padding-right: 4px;">Scanning</div>
+        <div id="scanningValue"></div>
     </div>
 </div>
 
@@ -216,7 +217,7 @@
             origin: originStarName,
             x: x,
             y: y,
-            type: "shipOrder", //change research target, transmit ship orders, send player message/credits/tech
+            type: "shipOrder",
             destination: destinationStarName,
             numberOfShips: numberOfShips,
             owner: owner
@@ -235,7 +236,7 @@
                     let order = {order: []};
                     order.order.push({
                         id: starName,
-                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        type: "increment",
                         science: "0",
                         industry: "1",
                         economy: "0",
@@ -259,7 +260,7 @@
                     let order = {order: []};
                     order.order.push({
                         id: starName,
-                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        type: "increment",
                         science: "1",
                         industry: "0",
                         economy: "0"
@@ -283,7 +284,7 @@
                     let order = {order: []};
                     order.order.push({
                         id: starName,
-                        type: "increment", //change research target, transmit ship orders, send player message/credits/tech
+                        type: "increment",
                         science: "0",
                         industry: "0",
                         economy: "1"
@@ -301,7 +302,7 @@
         let order = {order: []};
         order.order.push({
             player: getThisPlayer().id,
-            type: "researchTarget", //change research target, transmit ship orders, send player message/credits/tech
+            type: "researchTarget",
             tech: tech
         });
         socket.emit('playerAction', gameId, JSON.stringify(order));
@@ -309,6 +310,7 @@
 
     function drawMap() {
         clearMap(canvas, ctx);
+        document.getElementById("creditsValue").innerText = getThisPlayer().credits;
         document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
         document.getElementById("defenseValue").innerText = getThisPlayer().defense;
         document.getElementById("terraformingValue").innerText = getThisPlayer().terraforming;
@@ -396,7 +398,7 @@
     function getPlayerColor(player) {
         switch(player) {
             case 0:
-                return "#FFFFFF";
+                return "#FE8EE9"; //pink
             case 1:
                 return "#8EB9FE"; //blue
             case 2:
@@ -404,7 +406,7 @@
             case 3:
                 return "#FEE28E"; //yellow
             case 4:
-                return "#FE8EE9"; //pink
+                return "#FFFFFF";
         }
     }
 

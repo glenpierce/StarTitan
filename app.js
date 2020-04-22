@@ -270,27 +270,15 @@ function playerAction(socketId, gameId, data) {
   }
 
   function getManufacturingTech(game, player) {
-    for(let i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
-        return parseInt(game.map.PlayerData[i].manufacturing, 10);
-      }
-    }
+    return parseInt(game.map.PlayerData[player].manufacturing, 10);
   }
 
   function getWeaponsTech(game, player) {
-    for(let i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
-        return parseInt(game.map.PlayerData[i].weapons, 10);
-      }
-    }
+    return parseInt(game.map.PlayerData[player].weapons, 10);
   }
 
   function getDefenseTech(game, player) {
-    for(let i = 0; i < game.map.PlayerData.length; i++) {
-      if(player == parseInt(game.map.PlayerData[i].id, 10)) {
-        return parseInt(game.map.PlayerData[i].defense, 10);
-      }
-    }
+    return parseInt(game.map.PlayerData[player].defense, 10);
   }
 
   function setupGame(map) {
@@ -333,14 +321,14 @@ function playerAction(socketId, gameId, data) {
       let x;
       let y;
 
-      for (j = 0; j < 1; j++) {
+      for (j = 0; j < 9; j++) {
         x = Math.floor(Math.random() * (xMax - xMin + 1)) + xMin;
         y = Math.floor(Math.random() * (yMax - yMin + 1)) + yMin;
 
         map.MAP.push({
           id: starNamesList.splice(Math.floor(Math.random() * starNamesList.length), 1),
           type: "star",
-          ships: "5",
+          ships: "0",
           destination: "null",
           x: x,
           y: y,
@@ -432,7 +420,8 @@ function playerAction(socketId, gameId, data) {
         weapons: 1,
         defense: 1,
         terraforming: 1,
-        manufacturing: 1
+        manufacturing: 1,
+        scanning: 1
       });
     }
 
