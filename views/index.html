@@ -7,7 +7,7 @@
 <body style="background-color:black">
 <br>
 <div id="selectionPanel" style="width:100px; position: fixed;"></div>
-<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;">
+<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace; display: none;">
     <div style="display: flex; padding: 8px;">
         <div style="padding-right: 4px;">Credits</div>
         <div id="creditsValue"></div>
@@ -119,7 +119,7 @@
             selectionPanel.removeChild(selectionPanel.lastChild);
         }
         let selectionCount = 0;
-        for(i=0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
                 if(map.MAP[i].type == "ship") {
                     selectionCount++;
@@ -196,7 +196,7 @@
 
                 let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
                 let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
-                for(i=0; i < map.MAP.length; i++) {
+                for(let i = 0; i < map.MAP.length; i++) {
                     if (map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
                         if (map.MAP[i].type == "star") {
                             destinationStarName = map.MAP[i].id;
@@ -317,6 +317,9 @@
         document.getElementById("manufacturingValue").innerText = getThisPlayer().manufacturing;
         document.getElementById("rangeValue").innerText = getThisPlayer().range;
         document.getElementById("scanningValue").innerText = getThisPlayer().scanning;
+
+        infoPanel.style.display = "block";
+        infoPanel.style.color = getPlayerColor(getThisPlayer().ordinal);
         // while (infoPanel.hasChildNodes()) {
         //     infoPanel.removeChild(infoPanel.lastChild);
         // }
@@ -412,8 +415,10 @@
 
     function getThisPlayer() {
         for (let i = 0; i < map.PlayerData.length; i++) {
-            if (map.PlayerData[i].id.toString().substring(2) == socket.id)
+            if (map.PlayerData[i].id.toString().substring(2) == socket.id) {
+                map.PlayerData[i].ordinal = i;
                 return map.PlayerData[i];
+            }
         }
         return {id:socket.id};
     }
