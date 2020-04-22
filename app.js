@@ -60,9 +60,7 @@ class Game {
   }
 
   getPlayerById(socketId) {
-    console.log("gamePlayerById: " + socketId);
     for(let i = 0; i < this.map.PlayerData.length; i++) {
-      console.log(this.map.PlayerData[i]);
       if (this.map.PlayerData[i].id == socketId)
         return this.map.PlayerData[i];
       if(this.map.PlayerData[i].id == socketId.toString().substring(2))
@@ -84,7 +82,6 @@ io.on('connection', (socket) => {
   });
 
   socket.on('playerAction', (gameId, data) => {
-    console.log("playerAction socket.id = " + socket.id);
     playerAction(socket.id, gameId, data);
   });
 
@@ -139,7 +136,6 @@ function playerAction(socketId, gameId, data) {
   let order = {order:[]};
   order = JSON.parse(data);
   console.log(JSON.stringify(order));
-  console.log(order.order[0].id);
   dispatchOrder(socketId, getGameById(gameId), order);
 }
 
@@ -193,7 +189,6 @@ function playerAction(socketId, gameId, data) {
             if(isNaN(map.PlayerData[owner].researchPoints))
               map.PlayerData[owner].researchPoints = "0";
             map.PlayerData[owner].researchPoints = parseInt(map.MAP[i].science) + parseInt(map.PlayerData[owner].researchPoints);
-            console.log(map.PlayerData[owner].id + ": " + map.PlayerData[owner].researchPoints);
           }
           if (map.MAP[i].type == "ship") {
             if (map.MAP[i].destination != "null") {
@@ -264,7 +259,6 @@ function playerAction(socketId, gameId, data) {
           }
         });
         game.sockets.forEach((socket) => {
-          // console.log("sending state " + game.id + " " + socket.id);
           socket.emit('state', JSON.stringify(map))
         });
       }

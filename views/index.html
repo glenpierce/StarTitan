@@ -10,12 +10,30 @@
 <div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace;"></div>
 <div id="researchPanelContainer" style="position: fixed; bottom: 0; display: flex; justify-content: flex-end; width: 100%;">
     <div id="researchPanel" style="color: white; font-family: monospace;">
-        <div>Weapons</div>
-        <div>Defense</div>
-        <div>Terraforming</div>
-        <div>Manufacturing</div>
-        <div>Range</div>
-        <div>Scanning</div>
+        <div style="display: flex;"  onclick="setResearchTarget('weapons')">
+            <div>Weapons</div>
+            <div id="weaponsValue"></div>
+        </div>
+        <div style="display: flex;"  onclick="setResearchTarget('defense')">
+            <div>Defense</div>
+            <div id="defenseValue"></div>
+        </div>
+        <div style="display: flex"  onclick="setResearchTarget('terraforming')">
+            <div>Terraforming</div>
+            <div id="terraformingValue"></div>
+        </div>
+        <div style="display: flex;" onclick="setResearchTarget('manufacturing')">
+            <div>Manufacturing</div>
+            <div id="manufacturingValue"></div>
+        </div>
+        <div style="display: flex"  onclick="setResearchTarget('range')">
+            <div>Range</div>
+            <div id="rangeValue"></div>
+        </div>
+        <div style="display: flex;" onclick="setResearchTarget('scanning')">
+            <div>Scanning</div>
+            <div id="scanningValue"></div>
+        </div>
     </div>
 </div>
 
@@ -47,7 +65,6 @@
     };
 
     function showGameSelectDialog(games) {
-        console.log(games);
         let gameSelectDialog = document.createElement("div");
         gameSelectDialog.id ="gameSelectDialog";
         games.forEach((game) => {
@@ -87,9 +104,6 @@
     let selectionPanel = document.getElementById("selectionPanel");
     let infoPanel = document.getElementById("infoPanel");
 
-    let researchPanel = document.getElementById("researchPanel");
-    createResearchPanel();
-
     let avgWhiteStar =  new Image();
     avgWhiteStar.src = "images/averstarwhite.png";
     avgWhiteStar.width = 36;
@@ -100,7 +114,6 @@
         let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
         let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
         socket.emit("click(" + canvasX + ", " + canvasY + ")");
-        console.log("click(" + canvasX + ", " + canvasY + ")");
         while (selectionPanel.hasChildNodes()) {
             selectionPanel.removeChild(selectionPanel.lastChild);
         }
@@ -111,7 +124,6 @@
                     selectionCount++;
                     drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, true, ctx);
                 } else if(map.MAP[i].type == "star") {
-                    console.log("star clicked");
                     selectionCount++;
                     let selectedStarName = document.createElement('input');
                     selectedStarName.type = "text";
@@ -154,7 +166,6 @@
     }
 
     socket.on('state', function(data) {
-        // console.log(data);
         if(data.toString().substring(2,5) == "MAP") {
             map = JSON.parse(data);
             drawMap();
@@ -193,7 +204,6 @@
                     }
                 }
                 if(destinationStarName != "") {
-                    console.log("destination:" + destinationStarName);
                     transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
                 }
                 canvas.onclick = null;
@@ -222,7 +232,6 @@
                     map.PlayerData[owner].credits -= map.MAP[i].industry;
                     map.MAP[i].industry += 1;
                     selectedStarIndustry.innerHTML = map.MAP[i].industry;
-                    console.log("increment industry" + starName);
                     let order = {order: []};
                     order.order.push({
                         id: starName,
@@ -247,7 +256,6 @@
                     map.PlayerData[owner].credits -= map.MAP[i].science;
                     map.MAP[i].science += 1;
                     selectedStarScience.innerHTML = map.MAP[i].science;
-                    console.log("increment science" + starName);
                     let order = {order: []};
                     order.order.push({
                         id: starName,
@@ -272,7 +280,6 @@
                     map.PlayerData[owner].credits -= map.MAP[i].economy;
                     map.MAP[i].economy += 1;
                     selectedStarEconomy.innerHTML = map.MAP[i].economy;
-                    console.log("increment economy" + starName);
                     let order = {order: []};
                     order.order.push({
                         id: starName,
@@ -302,14 +309,19 @@
 
     function drawMap() {
         clearMap(canvas, ctx);
-        while (infoPanel.hasChildNodes()) {
-            infoPanel.removeChild(infoPanel.lastChild);
-        }
-        for (let i = 0; i < map.PlayerData.length; i++) {
-            let playerInfo = document.createElement('div');
-            playerInfo.innerHTML="player: " + i + ":" + map.PlayerData[i].credits + " weapons: " + map.PlayerData[i].weapons + " defense: " + map.PlayerData[i].defense + " terraforming: " + map.PlayerData[i].terraforming + " manufacturing: " + map.PlayerData[i].manufacturing + " range: " + map.PlayerData[i].range;
-            infoPanel.appendChild(playerInfo);
-        }
+        document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
+        document.getElementById("defenseValue").innerText = getThisPlayer().defense;
+        document.getElementById("terraformingValue").innerText = getThisPlayer().terraforming;
+        document.getElementById("manufacturingValue").innerText = getThisPlayer().manufacturing;
+        document.getElementById("rangeValue").innerText = getThisPlayer().range;
+        document.getElementById("scanningValue").innerText = getThisPlayer().scanning;
+        // while (infoPanel.hasChildNodes()) {
+        //     infoPanel.removeChild(infoPanel.lastChild);
+        // }
+        //     let playerInfo = document.createElement('div');
+        //     playerInfo.innerHTML="player: " + i + ":" + map.PlayerData[i].credits + " weapons: " + map.PlayerData[i].weapons + " defense: " + map.PlayerData[i].defense + " terraforming: " + map.PlayerData[i].terraforming + " manufacturing: " + map.PlayerData[i].manufacturing + " range: " + map.PlayerData[i].range;
+        //     infoPanel.appendChild(playerInfo);
+        // }
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].type == "star") {
                 drawStar(map.MAP[i].x, map.MAP[i].y, map.MAP[i].id, map.MAP[i].science, map.MAP[i].industry, map.MAP[i].economy, map.MAP[i].ships, map.MAP[i].owner, ctx);
@@ -398,20 +410,10 @@
 
     function getThisPlayer() {
         for (let i = 0; i < map.PlayerData.length; i++) {
-            if (map.PlayerData[i].id.toString().substring(3) == socket.id)
+            if (map.PlayerData[i].id.toString().substring(2) == socket.id)
                 return map.PlayerData[i];
         }
         return {id:socket.id};
-    }
-
-    function createResearchPanel() {
-       let weaponsTech = document.createElement('button');
-       weaponsTech.type = "button";
-       weaponsTech.innerHTML = "weapons";
-       weaponsTech.addEventListener('click', function (event) {
-           setResearchTarget('weapons');
-       });
-       researchPanel.appendChild(weaponsTech);
     }
 </script>
 </body>
