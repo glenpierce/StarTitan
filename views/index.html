@@ -39,10 +39,16 @@
 </div>
 
 <div id="playerData" style="color: white; font-family: monospace;"></div>
-<canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
+<!--<div style="position:relative;">-->
+<!--    <canvas id="subCanvas" width="1100" height="650" style="position:absolute; top: 0; left: 0;"></canvas>-->
+    <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
+<!--</div>-->
 <script src="/javascripts/socket.io.dev.js"></script>
 <script>
-    //How do I get the username?
+
+    // let subcanvas = document.getElementById("subCanvas");
+    // let subCtx = subcanvas.getContext("2d");
+
     let canvas = document.getElementById("myCanvas");
     let ctx = canvas.getContext("2d");
     ctx.font = "10px Arial";
@@ -178,7 +184,7 @@
         let y = 0;
         let owner;
         let maxShips;
-        for(let i=0; i < map.MAP.length; i++) {
+        for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].type == "star") {
                 if(map.MAP[i].id == originStarName) {
                     x = map.MAP[i].x;
@@ -189,6 +195,25 @@
                 }
             }
         }
+        canvas.onmousemove = onMouseMove;
+        function onMouseMove(mouseEvent) {
+            // clearMap(subcanvas, subCtx);
+            for(let i = 0; i < map.MAP.length; i++) {
+                if(map.MAP[i].type == "star") {
+                    if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY) < 20) {
+                        ctx.strokeStyle = getPlayerColor(parseInt(owner, 10));
+                        ctx.setLineDash([2, 2]);
+                        ctx.lineWidth=1;
+                        ctx.beginPath();
+                        ctx.moveTo(x,y);
+                        ctx.lineTo(map.MAP[i].x, map.MAP[i].y);
+                        ctx.stroke();
+                        break;
+                    }
+                }
+            }
+        }
+
         canvas.onclick = onClick2;
             function onClick2(event) {
                 let destinationStarName = "";
@@ -208,6 +233,7 @@
                     transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
                 }
                 canvas.onclick = null;
+                canvas.onmousemove = null;
             }
     }
 
@@ -394,8 +420,7 @@
     }
 
     function clearMap(canvas, ctx) {
-        ctx.fillStyle="black";
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
     }
 
     function getPlayerColor(player) {
