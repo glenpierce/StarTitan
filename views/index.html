@@ -124,7 +124,7 @@
                 if(map.MAP[i].type == "ship") {
                     selectionCount++;
                     drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, true, ctx);
-                } else if(map.MAP[i].type == "star") {
+                } else if(map.MAP[i].type == "star"  && map.MAP[i].owner == getThisPlayer().ordinal) {
                     selectionCount++;
                     let selectedStarName = document.createElement('input');
                     selectedStarName.type = "text";
