@@ -145,6 +145,7 @@
                     selectedStarScience.type = "button";
                     selectedStarScience.innerHTML = map.MAP[i].science;
                     let selectedStarShips = document.createElement('button');
+                    selectedStarShips.id = "selectedStarShips";
                     selectedStarShips.type = "button";
                     selectedStarShips.innerHTML = map.MAP[i].ships;
 
@@ -161,6 +162,7 @@
                     selectedStarScience.addEventListener("click", function() {incrementScience(selectedStarName.value, selectedStarScience)});
                     selectedStarEconomy.addEventListener("click", function() {incrementEconomy(selectedStarName.value, selectedStarEconomy)});
 
+                    selectedStarShips.addEventListener("click", function() {openSelectShipCount(selectedStarName.value)});
                     selectedStarShips.addEventListener("click", function() {openTransmitShipOrders(selectedStarName.value)});
                 }
             }
@@ -178,6 +180,34 @@
             drawMap();
         }
     });
+
+    let shipsToSend = 0;
+
+    function openSelectShipCount(originStarName) {
+        for(let i = 0; i < map.MAP.length; i++) {
+            if(map.MAP[i].type == "star") {
+                if(map.MAP[i].id == originStarName) {
+                    x = map.MAP[i].x;
+                    y = map.MAP[i].y;
+                    owner = map.MAP[i].owner;
+                    maxShips = map.MAP[i].ships;
+                    break;
+                }
+            }
+        }
+        let slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = 0;
+        slider.max = maxShips;
+        slider.value = maxShips;
+        shipsToSend = slider.value;
+        document.getElementById("selectedStarShips").innerHTML = shipsToSend;
+        slider.addEventListener('input', (event) => {
+            shipsToSend = event.target.value;
+            document.getElementById("selectedStarShips").innerHTML = shipsToSend;
+        });
+        selectionPanel.append(slider);
+    }
 
     function openTransmitShipOrders(originStarName) {
         let x = 0;
@@ -217,7 +247,8 @@
         canvas.onclick = onClick2;
             function onClick2(event) {
                 let destinationStarName = "";
-                let numberOfShips = maxShips;
+                let numberOfShips = shipsToSend;
+                shipsToSend = 0;
 
                 let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
                 let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
