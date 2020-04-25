@@ -260,7 +260,7 @@
                         }
                     }
                 }
-                if(destinationStarName != "") {
+                if(destinationStarName != "" && numberOfShips > 0) {
                     transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
                 }
                 canvas.onclick = null;
