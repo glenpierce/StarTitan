@@ -511,10 +511,12 @@ function playerAction(socketId, gameId, data) {
     let attackerDefenseTech = getDefenseTech(game, attacker.owner);
 
     while(defenderShips > 0 && attackerShips > 0) {
-      let attackingDamage = attackerShips*attackerWeaponsTech/defenderDefenseTech;
-      let defendingDamage = defenderShips*defenderWeaponsTech/attackerDefenseTech;
-      defenderShips -= attackingDamage;
+      let defendingDamage = defenderShips * defenderWeaponsTech / attackerDefenseTech;
       attackerShips -= defendingDamage;
+      if(attackerShips > 0) {
+        let attackingDamage = attackerShips * attackerWeaponsTech / defenderDefenseTech;
+        defenderShips -= attackingDamage;
+      }
     }
     if(defenderShips > 0) {
       defender.ships = defenderShips;
