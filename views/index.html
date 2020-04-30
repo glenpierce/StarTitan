@@ -46,10 +46,12 @@
     let foreground = document.createElement("canvas");
     let foregroundContext = foreground.getContext("2d");
     let background = document.createElement("canvas");
+    background.width = 1100;
+    background.height = 650;
     let backgroundContext = background.getContext("2d");
 
     backgroundImage = new Image();
-    backgroundImage.src = "./images/nebula.png";
+    backgroundImage.src = "./images/starfield.jpg";
 
     let domCanvas = document.getElementById("domCanvas");
     let domContext = domCanvas.getContext("2d");
@@ -369,7 +371,7 @@
 
     function drawMap() {
         clearMap(domCanvas, domContext);
-        backgroundContext.drawImage(backgroundImage, 0, 0, 1100, 650);
+        backgroundContext.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height, 0, 0, 1100, 650);
         domContext.drawImage(background, 0, 0, 1100, 650);
 
         document.getElementById("creditsValue").innerText = getThisPlayer().credits;
