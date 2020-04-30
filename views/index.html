@@ -39,20 +39,22 @@
 </div>
 
 <div id="playerData" style="color: white; font-family: monospace;"></div>
-<!--<div style="position:relative;">-->
-<!--    <canvas id="subCanvas" width="1100" height="650" style="position:absolute; top: 0; left: 0;"></canvas>-->
-    <canvas id="myCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
-<!--</div>-->
+<canvas id="domCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
 <script src="/javascripts/socket.io.dev.js"></script>
 <script>
 
-    // let subcanvas = document.getElementById("subCanvas");
-    // let subCtx = subcanvas.getContext("2d");
+    let foreground = document.createElement("canvas");
+    let foregroundContext = foreground.getContext("2d");
+    let background = document.createElement("canvas");
+    let backgroundContext = background.getContext("2d");
 
-    let canvas = document.getElementById("myCanvas");
-    let ctx = canvas.getContext("2d");
-    ctx.font = "10px Arial";
-    ctx.textAlign = "center";
+    backgroundImage = new Image();
+    backgroundImage.src = "./images/nebula.png";
+
+    let domCanvas = document.getElementById("domCanvas");
+    let domContext = domCanvas.getContext("2d");
+    domContext.font = "10px Arial";
+    domContext.textAlign = "center";
     let map;
     let clickableArea = 20;
     const socket = io();
@@ -116,10 +118,10 @@
     avgWhiteStar.width = 36;
     avgWhiteStar.height = 24;
 
-    canvas.addEventListener("click", onClick);
+    domCanvas.addEventListener("click", onClick);
     function onClick(event) {
-        let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
-        let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+        let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
+        let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
         socket.emit("click(" + canvasX + ", " + canvasY + ")");
         while (selectionPanel.hasChildNodes()) {
             selectionPanel.removeChild(selectionPanel.lastChild);
@@ -129,7 +131,7 @@
             if(map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
                 if(map.MAP[i].type == "ship") {
                     selectionCount++;
-                    drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, true, ctx);
+                    drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, true, domContext);
                 } else if(map.MAP[i].type == "star"  && map.MAP[i].owner == getThisPlayer().ordinal) {
                     selectionCount++;
                     let selectedStarName = document.createElement('input');
@@ -225,33 +227,33 @@
                 }
             }
         }
-        canvas.onmousemove = onMouseMove;
+        domCanvas.onmousemove = onMouseMove;
         function onMouseMove(mouseEvent) {
             // clearMap(subcanvas, subCtx);
             for(let i = 0; i < map.MAP.length; i++) {
                 if(map.MAP[i].type == "star") {
                     if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY) < 20) {
-                        ctx.strokeStyle = getPlayerColor(parseInt(owner, 10));
-                        ctx.setLineDash([2, 2]);
-                        ctx.lineWidth=1;
-                        ctx.beginPath();
-                        ctx.moveTo(x,y);
-                        ctx.lineTo(map.MAP[i].x, map.MAP[i].y);
-                        ctx.stroke();
+                        domContext.strokeStyle = getPlayerColor(parseInt(owner, 10));
+                        domContext.setLineDash([2, 2]);
+                        domContext.lineWidth=1;
+                        domContext.beginPath();
+                        domContext.moveTo(x,y);
+                        domContext.lineTo(map.MAP[i].x, map.MAP[i].y);
+                        domContext.stroke();
                         break;
                     }
                 }
             }
         }
 
-        canvas.onclick = onClick2;
+        domCanvas.onclick = onClick2;
             function onClick2(event) {
                 let destinationStarName = "";
                 let numberOfShips = shipsToSend;
                 shipsToSend = 0;
 
-                let canvasX = event.x - canvas.offsetLeft + document.body.scrollLeft;
-                let canvasY = event.y - canvas.offsetTop + document.body.scrollTop;
+                let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
+                let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
                 for(let i = 0; i < map.MAP.length; i++) {
                     if (map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
                         if (map.MAP[i].type == "star") {
@@ -263,8 +265,8 @@
                 if(destinationStarName != "" && numberOfShips > 0) {
                     transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
                 }
-                canvas.onclick = null;
-                canvas.onmousemove = null;
+                domCanvas.onclick = null;
+                domCanvas.onmousemove = null;
             }
     }
 
@@ -366,7 +368,10 @@
     }
 
     function drawMap() {
-        clearMap(canvas, ctx);
+        clearMap(domCanvas, domContext);
+        backgroundContext.drawImage(backgroundImage, 0, 0, 1100, 650);
+        domContext.drawImage(background, 0, 0, 1100, 650);
+
         document.getElementById("creditsValue").innerText = getThisPlayer().credits;
         document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
         document.getElementById("defenseValue").innerText = getThisPlayer().defense;
@@ -386,10 +391,10 @@
         // }
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].type == "star") {
-                drawStar(map.MAP[i].x, map.MAP[i].y, map.MAP[i].id, map.MAP[i].science, map.MAP[i].industry, map.MAP[i].economy, map.MAP[i].ships, map.MAP[i].owner, ctx);
+                drawStar(map.MAP[i].x, map.MAP[i].y, map.MAP[i].id, map.MAP[i].science, map.MAP[i].industry, map.MAP[i].economy, map.MAP[i].ships, map.MAP[i].owner, domContext);
             }
             if(map.MAP[i].type == "ship") {
-                drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, false, ctx);
+                drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, false, domContext);
             }
         }
     }
