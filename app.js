@@ -399,7 +399,7 @@ function playerAction(socketId, gameId, data) {
     //});
     //
     map.MAP.push({
-      id: "Orion",
+      id: ["Orion"],
       type: "star",
       ships: 5,
       destination: "null",
