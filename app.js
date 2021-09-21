@@ -53,6 +53,7 @@ class Game {
   constructor() {
     this.id;
     this.players = [];
+    this.playerNames = [];
     this.sockets = [];
     this.map = {MAP: [], PlayerData: []};
     this.shipSpeed;
@@ -205,7 +206,7 @@ function playerAction(socketId, gameId, data) {
                   j = map.MAP.length;
                 }
               }
-              console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistanceBetween(shipX, shipY, destinationX, destinationY));
+              // console.log("ship: (" + shipX + ", " + shipY + ") " + "star:(" + destinationX + ", " + destinationY + ")" + " distance: " + getDistanceBetween(shipX, shipY, destinationX, destinationY));
               if (getDistanceBetween(shipX, shipY, destinationX, destinationY) <= game.shipSpeed) {
                 if (starIndex != -1) {
                   if (map.MAP[starIndex].owner == map.MAP[i].owner) {
@@ -425,7 +426,7 @@ function playerAction(socketId, gameId, data) {
       });
     }
 
-    console.log(JSON.stringify(map));
+    // console.log(JSON.stringify(map));
   }
 
   function dispatchOrder(socketId, game, order) {

@@ -16,7 +16,6 @@ app.use(session({
 }));
 
 router.get('/', function(req, res, next) {
-    console.log("Welcome");
     if(req.session.user) {
         if (req.session && req.session.user) {
             connection = mysql.createConnection({
@@ -58,8 +57,6 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res){
 
-    console.log(req.body);
-
     var connection = mysql.createConnection({
         host: config.rdsHost,
         user: config.rdsUser,
@@ -71,10 +68,11 @@ router.post('/', function(req, res){
 
     connection.query('CALL createGame("' + req.body.gameName + '", "' + req.body.username + '")', function(err, rows, fields){
         if (!err && rows != undefined) {
-            console.log(rows);
             res.send();
         } else {
             console.log('Error while performing Query.');
+            console.log(err.code);
+            console.log(err.message);
             res.send();
         }
     });

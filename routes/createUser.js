@@ -11,8 +11,6 @@ router.get('/', function(req, res, next){
 
 router.post('/', function(req, res){
 
-    console.log("creating user");
-
     var connection = mysql.createConnection({
         host: config.rdsHost,
         user: config.rdsUser,
@@ -27,7 +25,6 @@ router.post('/', function(req, res){
 
     connection.query('CALL createUser("' + req.body.username + '", "' + hash + '", "' + req.body.alias + '")', function(err, rows, fields){
         if (!err) {
-            console.log('The user db has created a user: ', JSON.stringify(rows));
 
         } else {
             console.log('Error while performing Query.');

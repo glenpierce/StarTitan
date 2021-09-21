@@ -3,7 +3,8 @@ const router = express.Router();
 const games = require('../Games');
 
 router.get('/', function(req, res, next) {
-  res.sendFile( "views/index.html",{ root: '.' }); //I don't want to waste time rendering this page, so I just wrote it in HTML
+  console.log(req.session.user);
+  res.render( 'index',{ user: req.session.user }); //I don't want to waste time rendering this page, so I just wrote it in HTML
 });
 
 router.get('/test', function (req, res, next) {
@@ -20,5 +21,11 @@ router.get('/getGames', function (req, res, next) {
 
   res.send(gameIds);
 });
+
+// router.get('/getUserName', function (req, res, next) {
+//   res.type('application/json');
+//   // console.log(req);
+//   res.send(req.body);
+// });
 
 module.exports = router;

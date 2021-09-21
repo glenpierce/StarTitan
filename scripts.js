@@ -76,7 +76,7 @@ function update(){
 
     for(var i = 0; i < query.length; i++) {
 
-        console.log(query[i]);
+        // console.log(query[i]);
         connection.query(query[i], function (err, rows, fields) {
             if (!err) {
                 console.log("success");

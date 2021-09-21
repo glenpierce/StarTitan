@@ -3,7 +3,6 @@ include mixins
 
 script.
     games = !{gamesString};
-    console.log(games);
 
 html
     head
@@ -20,7 +19,6 @@ html
             }
 
             function postNewGameToServer() {
-                console.log("postNewGameToServer");
                 httpPostAsync("/welcome", console.log);
             }
 
@@ -46,8 +44,9 @@ body
                 input(id="createNewGameInput" class="input")
                 div(onclick="postNewGameToServer(); hideModal('createNewGameModal');" style="cursor:pointer;" class="border") Create Game
 
-        console.log(games)
         if(gamesObject.length > 0)
             +games(gamesObject)
+
+        a(href='/' style='display: block; margin-bottom: 10px;') Join Game
 
         div(class="border" onclick="createGame()" style="cursor:pointer;") Create Game

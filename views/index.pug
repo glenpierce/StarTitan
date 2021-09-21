@@ -1,48 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Star Titan</title>
-    <link rel="stylesheet" href="/stylesheets/style.css">
-</head>
-<body style="background-color:black">
-<br>
-<div id="selectionPanel" style="width:100px; position: fixed;"></div>
-<div id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace; display: none;">
-    <div style="display: flex; padding: 8px;">
-        <div style="padding-right: 4px;">Credits</div>
-        <div id="creditsValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')">
-        <div style="padding-right: 4px;">Weapons</div>
-        <div id="weaponsValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')">
-        <div style="padding-right: 4px;">Defense</div>
-        <div id="defenseValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')">
-        <div style="padding-right: 4px;">Terraforming</div>
-        <div id="terraformingValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')">
-        <div style="padding-right: 4px;">Manufacturing</div>
-        <div id="manufacturingValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')">
-        <div style="padding-right: 4px;">Range</div>
-        <div id="rangeValue"></div>
-    </div>
-    <div style="display: flex; padding: 8px;" onclick="setResearchTarget('scanning')">
-        <div style="padding-right: 4px;">Scanning</div>
-        <div id="scanningValue"></div>
-    </div>
-</div>
+doctype html
+html
+    head
+        title Star Titan
+        link(rel="stylesheet" href="/stylesheets/style.css")
 
-<div id="playerData" style="color: white; font-family: monospace;"></div>
-<canvas id="domCanvas" width="1100" height="650" style="border:1px solid #000000;"></canvas>
-<script src="/javascripts/socket.io.dev.js"></script>
-<script>
+    body(style="background-color:black")
+        br
+        div(id="selectionPanel" style="width:100px; position: fixed;")
+        div(id="infoPanel" style="position: fixed; bottom: 0; color: white; font-family: monospace; display: none;")
+            div(style="display: flex; padding: 8px;")
+                div(style="padding-right: 4px;") Credits
+                div(id="creditsValue")
+            div style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')">
+                div(style="padding-right: 4px;") Weapons
+                div(id="weaponsValue")
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')")
+                div(style="padding-right: 4px;") Defense
+                div(id="defenseValue")
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')")
+                div(style="padding-right: 4px;") Terraforming
+                div(id="terraformingValue")
+            div(style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')")
+                div(style="padding-right: 4px;") Manufacturing
+                div(id="manufacturingValue")
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')")
+                div(style="padding-right: 4px;") Range
+                div(id="rangeValue")
+            div(style="display: flex; padding: 8px;" onclick="setResearchTarget('scanning')")
+                div(style="padding-right: 4px;") Scanning
+                div(id="scanningValue")
+
+div(id="playerData" style="color: white; font-family: monospace;")
+canvas(id="domCanvas" width="1100" height="650" style="border:1px solid #000000;")
+script(src="/javascripts/socket.io.dev.js")
+script.
 
     let foreground = document.createElement("canvas");
     let foregroundContext = foreground.getContext("2d");
@@ -62,7 +53,7 @@
     let clickableArea = 20;
     const socket = io();
     let gameId;
-    let userName;
+    let userName = "!{user}";
 
     window.onload = function(onloadEvent) {
         let getGamesRequest = new XMLHttpRequest();
@@ -75,28 +66,18 @@
         getGamesRequest.open("GET", "http://localhost:3000/getGames", true);
         getGamesRequest.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         getGamesRequest.send();
-
-
-        let getUserNameRequest = new XMLHttpRequest();
-        getUserNameRequest.onreadystatechange = function () {
-            if (getUserNameRequest.readyState == 3) {
-            } else if (getUserNameRequest.readyState == 4 && getUserNameRequest.status == 200) {
-                setUserName(JSON.parse(getUserNameRequest.responseText));
-            }
-        };
-        getUserNameRequest.open("GET", "http://localhost:3000/getUserName", true);
-        getUserNameRequest.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        getUserNameRequest.send();
     };
-
-    function setUserName(name) {
-        userName = name;
-        console.log(userName);
-    }
 
     function showGameSelectDialog(games) {
         let gameSelectDialog = document.createElement("div");
         gameSelectDialog.id ="gameSelectDialog";
+
+        if (userName != null) {
+            let nameTag = document.createElement("div");
+            nameTag.textContent = userName;
+            gameSelectDialog.append(nameTag);
+        }
+
         games.forEach((game) => {
             let gameButton = document.createElement("div");
             gameButton.className = "clickable margin";
@@ -134,7 +115,7 @@
 
     function selectGame(selectedGameId) {
         gameId = selectedGameId;
-        socket.emit('playerJoin', selectedGameId);
+        socket.emit('playerJoin', {selectedGameId: selectedGameId, user: userName});
     }
 
     socket.on('playerAdded', function(data) {
@@ -278,27 +259,27 @@
         }
 
         domCanvas.onclick = onClick2;
-            function onClick2(event) {
-                let destinationStarName = "";
-                let numberOfShips = shipsToSend;
-                shipsToSend = 0;
+        function onClick2(event) {
+            let destinationStarName = "";
+            let numberOfShips = shipsToSend;
+            shipsToSend = 0;
 
-                let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
-                let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
-                for(let i = 0; i < map.MAP.length; i++) {
-                    if (map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
-                        if (map.MAP[i].type == "star") {
-                            destinationStarName = map.MAP[i].id;
-                            break;
-                        }
+            let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
+            let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
+            for(let i = 0; i < map.MAP.length; i++) {
+                if (map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
+                    if (map.MAP[i].type == "star") {
+                        destinationStarName = map.MAP[i].id;
+                        break;
                     }
                 }
-                if(destinationStarName != "" && numberOfShips > 0) {
-                    transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
-                }
-                domCanvas.onclick = null;
-                domCanvas.onmousemove = null;
             }
+            if(destinationStarName != "" && numberOfShips > 0) {
+                transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner);
+            }
+            domCanvas.onclick = null;
+            domCanvas.onmousemove = null;
+        }
     }
 
     function transmitShipOrders(originStarName, x, y, destinationStarName, numberOfShips, owner) {
@@ -325,7 +306,7 @@
                     selectedStarIndustry.innerHTML = map.MAP[i].industry;
                     let order = {order: []};
                     order.order.push({
-                        id: starName,
+                    id: starName,
                         type: "increment",
                         science: "0",
                         industry: "1",
@@ -513,6 +494,3 @@
         }
         return {id:socket.id};
     }
-</script>
-</body>
-</html>
