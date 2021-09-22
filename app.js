@@ -191,7 +191,7 @@ function playerAction(socketId, gameId, data) {
     });
   });
 
-  setInterval(gameLoop, 1000);
+  setInterval(gameLoop, 10_000);
 
   function gameLoop() {
     games.forEach(game => {
