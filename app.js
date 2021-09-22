@@ -98,6 +98,7 @@ function createNewGame(socket) {
   setupGame(game.map);
   game.shipSpeed = 20;
   game.gameSpeed = 1000;
+  game.state = "PAUSED";
   return game;
 }
 
@@ -121,6 +122,15 @@ function addNewPlayer(socket, gameId, userName) {
     game.playerNames.push(userName);
     game.map.PlayerData[game.players.length - 1].id = socket.id;
   }
+  let playerCount = 0;
+  for(player in game.players) {
+    if (player != null) {
+      playerCount++;
+    }
+  }
+  if(playerCount == 4) {
+    game.state = "STARTED";
+  }
   socket.emit('playerAdded', gameId);
 }
 
@@ -138,7 +148,9 @@ function getGameById(gameId) {
 }
 
 function removePlayer(socketId) {
-
+  // const removedPlayerIndex = game.players.indexOf(socketId);
+  // game.players[removedPlayerIndex] = null;
+  // game.state = "PAUSED";
 }
 
 function playerAction(socketId, gameId, data) {
