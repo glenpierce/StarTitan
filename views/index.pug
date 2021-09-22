@@ -11,7 +11,7 @@ html
             div(style="display: flex; padding: 8px;")
                 div(style="padding-right: 4px;") Credits
                 div(id="creditsValue")
-            div style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')">
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')")
                 div(style="padding-right: 4px;") Weapons
                 div(id="weaponsValue")
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')")
@@ -93,7 +93,7 @@ script.
         createGameButton.className = "clickable margin";
         createGameButton.textContent = "Create new game";
         createGameButton.addEventListener("click", function () {
-            socket.emit("createNewGame");
+            socket.emit("createNewGame", userName);
             hideModal("gameSelectDialog");
         });
         gameSelectDialog.append(createGameButton);

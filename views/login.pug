@@ -39,4 +39,4 @@ html
                     input(id="password" style="display:inline; float:right;" class="input" type="password")
             div(onclick='httpPostAsync("/login", redirect)' class="border" style="cursor:pointer; margin:auto; margin-bottom:10px;") Login
 
-            div(onclick='httpPostAsync("/createUser", redirect)' class="border" style="cursor:pointer; margin:auto;") Create User
+            div(onclick="window.location='/createUser'" class="border" style="cursor:pointer; margin:auto;") Create User

@@ -71,15 +71,15 @@ class Game {
 }
 
 io.on('connection', (socket) => {
-  socket.on('createNewGame', () => {
+  socket.on('createNewGame', (userName) => {
     let game = createNewGame(socket);
     games.push(game);
-    addNewPlayer(socket, game.id);
+    addNewPlayer(socket, game.id, userName);
     socket.emit(JSON.stringify(game.map));
   });
 
-  socket.on('playerJoin', (gameId) => {
-    addNewPlayer(socket, gameId);
+  socket.on('playerJoin', (playerJoinObject) => {
+    addNewPlayer(socket, playerJoinObject.selectedGameId, playerJoinObject.user);
   });
 
   socket.on('playerAction', (gameId, data) => {
@@ -108,11 +108,19 @@ function generateRandomId() {
   return Math.ceil(Math.random() * (max - min) + min);
 }
 
-function addNewPlayer(socket, gameId) {
+function addNewPlayer(socket, gameId, userName) {
   let game = getGameById(gameId);
-  game.players.push(socket.id);
-  game.sockets.push(socket);
-  game.map.PlayerData[game.players.length - 1].id = socket.id;
+  if(game.playerNames.indexOf(userName) > -1) {
+    const index = game.playerNames.indexOf(userName);
+    game.players[index] = socket.id;
+    game.sockets[index] = socket;
+    game.map.PlayerData[index].id = socket.id;
+  } else {
+    game.players.push(socket.id);
+    game.sockets.push(socket);
+    game.playerNames.push(userName);
+    game.map.PlayerData[game.players.length - 1].id = socket.id;
+  }
   socket.emit('playerAdded', gameId);
 }
 
