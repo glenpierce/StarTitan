@@ -132,6 +132,12 @@ script.
 
     domCanvas.addEventListener("click", onClick);
     function onClick(event) {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
         let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
         socket.emit("click(" + canvasX + ", " + canvasY + ")");
@@ -224,6 +230,12 @@ script.
     }
 
     function openTransmitShipOrders(originStarName) {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         let x = 0;
         let y = 0;
         let owner;
@@ -297,6 +309,12 @@ script.
     }
 
     function incrementIndustry(starName, selectedStarIndustry) {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].id == starName) {
                 let owner = parseInt(map.MAP[i].owner);
@@ -321,6 +339,12 @@ script.
     }
 
     function incrementScience(starName, selectedStarScience) {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].id == starName) {
                 let owner = parseInt(map.MAP[i].owner);
@@ -345,6 +369,12 @@ script.
     }
 
     function incrementEconomy(starName, selectedStarEconomy) {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].id == starName) {
                 let owner = parseInt(map.MAP[i].owner);
@@ -379,6 +409,12 @@ script.
     }
 
     function drawMap() {
+        if (map == null) {
+            return;
+        }
+        if (map.MAP == null) {
+            return;
+        }
         clearMap(domCanvas, domContext);
         backgroundContext.drawImage(backgroundImage, 0, 0, backgroundImage.width, backgroundImage.height, 0, 0, 1100, 650);
         domContext.drawImage(background, 0, 0, 1100, 650);
