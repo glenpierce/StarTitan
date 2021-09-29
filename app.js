@@ -1,10 +1,9 @@
 const express = require('express');
 const http = require('http');
-const socketIO = require('socket.io');
 
 const app = express();
-const server = http.Server(app);
-const io = socketIO(server);
+const server = http.createServer(app);
+const io = require('socket.io')(server);
 
 const path = require('path');
 const favicon = require('serve-favicon');
@@ -71,7 +70,9 @@ class Game {
 }
 
 io.on('connection', (socket) => {
+  console.log("connected");
   socket.on('createNewGame', (userName) => {
+    console.log("createNewGame");
     let game = createNewGame(socket);
     games.push(game);
     addNewPlayer(socket, game.id, userName);
@@ -87,6 +88,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    console.log("disconnect");
     removePlayer(socket.id);
   })
 });
@@ -98,7 +100,7 @@ function createNewGame(socket) {
   setupGame(game.map);
   game.shipSpeed = 20;
   game.gameSpeed = 1000;
-  game.state = "PAUSED";
+  // game.state = "PAUSED";
   return game;
 }
 

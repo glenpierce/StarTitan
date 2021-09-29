@@ -523,7 +523,7 @@ script.
 
     function getThisPlayer() {
         for (let i = 0; i < map.PlayerData.length; i++) {
-            if (map.PlayerData[i].id.toString().substring(2) == socket.id) {
+            if (map.PlayerData[i].id.toString() == socket.id) {
                 map.PlayerData[i].ordinal = i;
                 return map.PlayerData[i];
             }
