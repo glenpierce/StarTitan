@@ -3,7 +3,10 @@ const http = require('http');
 
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, { cors: {
+    origin: '*',
+  }
+});
 
 const path = require('path');
 const favicon = require('serve-favicon');
