@@ -11,22 +11,22 @@ html
             div(style="display: flex; padding: 8px;")
                 div(style="padding-right: 4px;") Credits
                 div(id="creditsValue")
-            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')")
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')" class="clickable")
                 div(style="padding-right: 4px;") Weapons
                 div(id="weaponsValue")
-            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')")
+            div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')" class="clickable")
                 div(style="padding-right: 4px;") Defense
                 div(id="defenseValue")
-            //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')")
+            //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')" class="clickable")
             //    div(style="padding-right: 4px;") Terraforming
             //    div(id="terraformingValue")
-            div(style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')")
+            div(style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')" class="clickable")
                 div(style="padding-right: 4px;") Manufacturing
                 div(id="manufacturingValue")
-            //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')")
+            //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')" class="clickable")
             //    div(style="padding-right: 4px;") Range
             //    div(id="rangeValue")
-            //div(style="display: flex; padding: 8px;" onclick="setResearchTarget('scanning')")
+            //div(style="display: flex; padding: 8px;" onclick="setResearchTarget('scanning')" class="clickable")
             //    div(style="padding-right: 4px;") Scanning
             //    div(id="scanningValue")
 
@@ -42,7 +42,7 @@ script.
     background.height = 650;
     let backgroundContext = background.getContext("2d");
 
-    backgroundImage = new Image();
+    let backgroundImage = new Image();
     backgroundImage.src = "./images/starfield.jpg";
 
     let domCanvas = document.getElementById("domCanvas");
@@ -51,7 +51,7 @@ script.
     domContext.textAlign = "center";
     let map;
     let clickableArea = 20;
-    const socket = io();
+    const socket = io.connect();
     let gameId;
     let userName = "!{user}";
 
@@ -204,6 +204,10 @@ script.
     let shipsToSend = 0;
 
     function openSelectShipCount(originStarName) {
+        let x;
+        let y;
+        let owner;
+        let maxShips;
         for(let i = 0; i < map.MAP.length; i++) {
             if(map.MAP[i].type == "star") {
                 if(map.MAP[i].id == originStarName) {

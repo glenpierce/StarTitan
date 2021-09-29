@@ -90,7 +90,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log("disconnect");
     removePlayer(socket.id);
-  })
+  });
 });
 
 function createNewGame(socket) {
