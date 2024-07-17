@@ -265,16 +265,16 @@ script.
             // clearMap(subcanvas, subCtx);
             for(let i = 0; i < map.MAP.length; i++) {
                 if(map.MAP[i].type == "star") {
+                    domContext.strokeStyle = '#000000';
                     if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY + 80) < 20) {
                         domContext.strokeStyle = getPlayerColor(parseInt(owner, 10));
-                        domContext.setLineDash([2, 2]);
-                        domContext.lineWidth=1;
-                        domContext.beginPath();
-                        domContext.moveTo(x,y);
-                        domContext.lineTo(map.MAP[i].x, map.MAP[i].y);
-                        domContext.stroke();
-                        break;
                     }
+                    domContext.setLineDash([2, 2]);
+                    domContext.lineWidth = 1;
+                    domContext.beginPath();
+                    domContext.moveTo(x, y);
+                    domContext.lineTo(map.MAP[i].x, map.MAP[i].y);
+                    domContext.stroke();
                 }
             }
         }
