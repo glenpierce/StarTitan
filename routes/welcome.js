@@ -1,12 +1,24 @@
-var express = require('express');
-var router = express.Router();
-var mysql = require('mysql');
-var session = require('client-sessions');
-var path = require("path");
+const express = require('express');
+const router = express.Router();
+const mysql = require('mysql');
+const session = require('client-sessions');
+const path = require("path");
 
-var app = express();
+const app = express();
 
-var config = require('../config.js');
+try {
+    configJs = require('./config.js');
+} catch (error) {
+    configJs = {
+        secret: "someSecret",
+        rdsHost: "rdsHost",
+        rdsUser: "rdsUser",
+        rdsPassword: "rdsPassword",
+        rdsDatabase: "rdsDatabase"
+    }
+}
+
+const config = configJs;
 
 app.use(session({
     cookieName: 'session',
