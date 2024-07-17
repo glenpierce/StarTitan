@@ -3,7 +3,10 @@ const router = express.Router();
 const games = require('../Games');
 
 router.get('/', function(req, res, next) {
-  console.log(req.session.user);
+  if (req.session.user == undefined) {
+    req.session.user = `Player_${Math.floor(Math.random() * 100)}`;
+  }
+  console.log(`username: ${req.session.user}`);
   res.render( 'index',{ user: req.session.user }); //I don't want to waste time rendering this page, so I just wrote it in HTML
 });
 
