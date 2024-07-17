@@ -20,7 +20,19 @@ const welcome = require('./routes/welcome');
 const login = require('./routes/login');
 const createUser = require('./routes/createUser');
 
-const config = require('./config.js');
+let configJs;
+
+try {
+  configJs = require('./config.js');
+} catch (error) {
+  configJs = {
+    secret: "someSecret"
+  }
+}
+
+const config = configJs;
+
+console.log(config);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
