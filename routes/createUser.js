@@ -3,7 +3,22 @@ var router = express.Router();
 var mysql = require('mysql');
 var bcrypt = require('bcryptjs');
 
-var config = require('../config.js');
+let configJs;
+
+try {
+    configJs = require('../config.js');
+} catch (error) {
+    configJs = {
+        secret: "someSecret",
+        rdsHost: "rdsHost",
+        rdsUser: "rdsUser",
+        rdsPassword: "rdsPassword",
+        rdsDatabase: "rdsDatabase"
+    }
+}
+
+const config = configJs;
+
 
 router.get('/', function(req, res, next){
     res.render('createUser');

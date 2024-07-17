@@ -1,13 +1,28 @@
-var express = require('express');
-var router = express.Router();
-var mysql = require('mysql');
-var bcrypt = require('bcryptjs');
-var session = require('client-sessions');
-var path = require("path");
+const express = require('express');
+const router = express.Router();
+const mysql = require('mysql');
+const bcrypt = require('bcryptjs');
+const session = require('client-sessions');
+const path = require("path");
 
-var app = express();
+const app = express();
 
-var config = require('../config.js');
+let configJs;
+
+try {
+    configJs = require('./config.js');
+} catch (error) {
+    configJs = {
+        secret: "someSecret",
+        rdsHost: "rdsHost",
+        rdsUser: "rdsUser",
+        rdsPassword: "rdsPassword",
+        rdsDatabase: "rdsDatabase"
+    }
+}
+
+const config = configJs;
+
 
 app.use(session({
     cookieName: 'session',
@@ -23,7 +38,7 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res){
 
 
-    var connection = mysql.createConnection({
+    const connection = mysql.createConnection({
         host: config.rdsHost,
         user: config.rdsUser,
         password: config.rdsPassword,

@@ -6,8 +6,10 @@ const path = require("path");
 
 const app = express();
 
+let configJs;
+
 try {
-    configJs = require('./config.js');
+    configJs = require('../config.js');
 } catch (error) {
     configJs = {
         secret: "someSecret",
@@ -30,7 +32,7 @@ app.use(session({
 router.get('/', function(req, res, next) {
     if(req.session.user) {
         if (req.session && req.session.user) {
-            connection = mysql.createConnection({
+            const connection = mysql.createConnection({
                 host: config.rdsHost,
                 user: config.rdsUser,
                 password: config.rdsPassword,
@@ -38,14 +40,14 @@ router.get('/', function(req, res, next) {
             });
 
             connection.connect();
-            query = 'select * from games where status between 0 and 2;';
+            const query = 'select * from games where status between 0 and 2;';
             connection.query(query, function (err, rows, fields) {
                 if (!err) {
                     if (rows[0] == null) {
                         renderWelcomePage(res);
                     } else {
-                        data = getGamesFromRows(rows);
-                        stringFromServer = JSON.stringify(rows);
+                        const data = getGamesFromRows(rows);
+                        const stringFromServer = JSON.stringify(rows);
                         res.render('welcome', {
                             gamesObject: data,
                             gamesString: stringFromServer,
@@ -69,7 +71,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/', function(req, res){
 
-    var connection = mysql.createConnection({
+    const connection = mysql.createConnection({
         host: config.rdsHost,
         user: config.rdsUser,
         password: config.rdsPassword,
@@ -107,8 +109,8 @@ function getGamesFromRows(rows){
     if(rows == null || rows.length < 1){
         return "";
     }
-    var returnedRows = [];
-    for(i = 0; i < rows.length; i++) {
+    const returnedRows = [];
+    for(let i = 0; i < rows.length; i++) {
         game = {};
         game.id = rows[i].id;
         game.name = rows[i].name;
