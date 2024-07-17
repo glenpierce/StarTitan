@@ -21,6 +21,24 @@ a {
   background-color:black; color:white; border-color:white; border-radius:5px; padding:5px; outline:none;
 }
 
+input:disabled {
+    background-color:black; color:white; border:none; padding:5px; outline:none;
+}
+
+button {
+  color: white;
+  border: solid #00B7FF;
+  background: #00B7FF;
+  border-radius: 5px;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
 .border {
   border-style: solid;
   border-color: white;

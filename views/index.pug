@@ -31,7 +31,7 @@ html
             //    div(id="scanningValue")
 
 div(id="playerData" style="color: white; font-family: monospace;")
-canvas(id="domCanvas" width="1100" height="650" style="border:1px solid #000000;")
+canvas(id="domCanvas" width="1100" height="650" style="border:1px solid #000000; padding-top:80px;")
 script(src="/javascripts/socket.io.dev.js")
 script.
 
@@ -139,7 +139,7 @@ script.
             return;
         }
         let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
-        let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
+        let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop - 80; // 80 is the top-padding of the canvas
         socket.emit("click(" + canvasX + ", " + canvasY + ")");
         while (selectionPanel.hasChildNodes()) {
             selectionPanel.removeChild(selectionPanel.lastChild);
@@ -153,6 +153,7 @@ script.
                 } else if(map.MAP[i].type == "star"  && map.MAP[i].owner == getThisPlayer().ordinal) {
                     selectionCount++;
                     let selectedStarName = document.createElement('input');
+                    selectedStarName.disabled = true;
                     selectedStarName.type = "text";
                     selectedStarName.value = map.MAP[i].id;
                     let selectedStarEconomy = document.createElement('button');
@@ -170,7 +171,8 @@ script.
                     selectedStarShips.innerHTML = map.MAP[i].ships;
 
                     let selectedStar = document.createElement('div');
-                    selectedStar.appendChild(selectedStarName);
+                    selectedStar.style.display = "flex";
+                    selectionPanel.appendChild(selectedStarName);
                     selectedStar.appendChild(selectedStarEconomy);
                     selectedStar.appendChild(selectedStarIndustry);
                     selectedStar.appendChild(selectedStarScience);
@@ -204,6 +206,9 @@ script.
     let shipsToSend = 0;
 
     function openSelectShipCount(originStarName) {
+        if(selectionPanel.childElementCount > 2) {
+            return;
+        }
         let x;
         let y;
         let owner;
@@ -260,7 +265,7 @@ script.
             // clearMap(subcanvas, subCtx);
             for(let i = 0; i < map.MAP.length; i++) {
                 if(map.MAP[i].type == "star") {
-                    if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY) < 20) {
+                    if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY + 80) < 20) {
                         domContext.strokeStyle = getPlayerColor(parseInt(owner, 10));
                         domContext.setLineDash([2, 2]);
                         domContext.lineWidth=1;
@@ -281,7 +286,7 @@ script.
             shipsToSend = 0;
 
             let canvasX = event.x - domCanvas.offsetLeft + document.body.scrollLeft;
-            let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop;
+            let canvasY = event.y - domCanvas.offsetTop + document.body.scrollTop - 80;
             for(let i = 0; i < map.MAP.length; i++) {
                 if (map.MAP[i].x < canvasX + clickableArea && map.MAP[i].x > canvasX - clickableArea && map.MAP[i].y < canvasY + clickableArea && map.MAP[i].y > canvasY - clickableArea) {
                     if (map.MAP[i].type == "star") {

@@ -32,8 +32,6 @@ try {
 
 const config = configJs;
 
-console.log(config);
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('port', 3000);
