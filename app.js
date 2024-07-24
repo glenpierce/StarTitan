@@ -287,12 +287,18 @@ function playerAction(socketId, gameId, data) {
           }
         }
         map.PlayerData.forEach(player => {
-          if(player.researchTarget != null) {
-            if (player[player.researchTarget] < player.researchPoints / 10) {
-              player[player.researchTarget]++;
-              player.researchPoints -= player[player.researchTarget] * 10;
-            }
+          if(player.researchTarget == null) {
+            player.researchTarget = "manufacturing";
           }
+          if (player[player.researchTarget + "Progress"] == null) {
+            player[player.researchTarget + "Progress"] = 0;
+          }
+          player[player.researchTarget + "Progress"] += player.researchPoints;
+            while(player[player.researchTarget + "Progress"] >= 100) {
+              player[player.researchTarget] += 1;
+              player[player.researchTarget + "Progress"] -= 100;
+              player.researchPoints = player[player.researchTarget + "Progress"];
+            }
         });
         game.sockets.forEach((socket) => {
           socket.emit('state', JSON.stringify(map))

@@ -11,18 +11,22 @@ html
             div(style="display: flex; padding: 8px;")
                 div(style="padding-right: 4px;") Credits
                 div(id="creditsValue")
+                    div(id="creditsPerTurn")
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')" class="clickable")
                 div(style="padding-right: 4px;") Weapons
                 div(id="weaponsValue")
+                progress(id="weaponsProgress" max="100")
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')" class="clickable")
                 div(style="padding-right: 4px;") Defense
                 div(id="defenseValue")
+                progress(id="defenseProgress" max="100")
             //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')" class="clickable")
             //    div(style="padding-right: 4px;") Terraforming
             //    div(id="terraformingValue")
             div(style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')" class="clickable")
                 div(style="padding-right: 4px;") Manufacturing
                 div(id="manufacturingValue")
+                progress(id="manufacturingProgress" max="100")
             //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')" class="clickable")
             //    div(style="padding-right: 4px;") Range
             //    div(id="rangeValue")
@@ -443,10 +447,14 @@ script.
         domContext.drawImage(background, 0, 0, 1100, 650);
 
         document.getElementById("creditsValue").innerText = getThisPlayer().credits;
+        // document.getElementById("creditsPerTurn").innerText = getThisPlayer().creditsPerTurn;
         document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
+        document.getElementById("weaponsProgress").value = getThisPlayer().weaponsProgress ? getThisPlayer().weaponsProgress : 0;
         document.getElementById("defenseValue").innerText = getThisPlayer().defense;
+        document.getElementById("defenseProgress").value = getThisPlayer().defenseProgress ? getThisPlayer().defenseProgress : 0;
         // document.getElementById("terraformingValue").innerText = getThisPlayer().terraforming;
         document.getElementById("manufacturingValue").innerText = getThisPlayer().manufacturing;
+        document.getElementById("manufacturingProgress").value = getThisPlayer().manufacturingProgress ? getThisPlayer().manufacturingProgress : 0;
         // document.getElementById("rangeValue").innerText = getThisPlayer().range;
         // document.getElementById("scanningValue").innerText = getThisPlayer().scanning;
 
