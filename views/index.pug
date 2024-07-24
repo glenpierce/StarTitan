@@ -15,18 +15,18 @@ html
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')" class="clickable")
                 div(style="padding-right: 4px;") Weapons
                 div(id="weaponsValue")
-                progress(id="weaponsProgress" max="100")
+                progress(id="weaponsProgress" max="10")
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('defense')" class="clickable")
                 div(style="padding-right: 4px;") Defense
                 div(id="defenseValue")
-                progress(id="defenseProgress" max="100")
+                progress(id="defenseProgress" max="10")
             //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('terraforming')" class="clickable")
             //    div(style="padding-right: 4px;") Terraforming
             //    div(id="terraformingValue")
             div(style="display: flex; padding: 8px;" onclick="setResearchTarget('manufacturing')" class="clickable")
                 div(style="padding-right: 4px;") Manufacturing
                 div(id="manufacturingValue")
-                progress(id="manufacturingProgress" max="100")
+                progress(id="manufacturingProgress" max="10")
             //div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('range')" class="clickable")
             //    div(style="padding-right: 4px;") Range
             //    div(id="rangeValue")
@@ -450,11 +450,14 @@ script.
         // document.getElementById("creditsPerTurn").innerText = getThisPlayer().creditsPerTurn;
         document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
         document.getElementById("weaponsProgress").value = getThisPlayer().weaponsProgress ? getThisPlayer().weaponsProgress : 0;
+        document.getElementById("weaponsProgress").max = getThisPlayer().weapons * 10;
         document.getElementById("defenseValue").innerText = getThisPlayer().defense;
         document.getElementById("defenseProgress").value = getThisPlayer().defenseProgress ? getThisPlayer().defenseProgress : 0;
+        document.getElementById("defenseProgress").max = getThisPlayer().defense * 10;
         // document.getElementById("terraformingValue").innerText = getThisPlayer().terraforming;
         document.getElementById("manufacturingValue").innerText = getThisPlayer().manufacturing;
         document.getElementById("manufacturingProgress").value = getThisPlayer().manufacturingProgress ? getThisPlayer().manufacturingProgress : 0;
+        document.getElementById("manufacturingProgress").max = getThisPlayer().manufacturing * 10;
         // document.getElementById("rangeValue").innerText = getThisPlayer().range;
         // document.getElementById("scanningValue").innerText = getThisPlayer().scanning;
 

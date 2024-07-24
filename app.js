@@ -294,10 +294,10 @@ function playerAction(socketId, gameId, data) {
             player[player.researchTarget + "Progress"] = 0;
           }
           player[player.researchTarget + "Progress"] += player.researchPoints;
-            while(player[player.researchTarget + "Progress"] >= 100) {
+          player.researchPoints = 0;
+            while(player[player.researchTarget + "Progress"] >= player[player.researchTarget] * 10) {
+              player[player.researchTarget + "Progress"] -= player[player.researchTarget] * 10;
               player[player.researchTarget] += 1;
-              player[player.researchTarget + "Progress"] -= 100;
-              player.researchPoints = player[player.researchTarget + "Progress"];
             }
         });
         game.sockets.forEach((socket) => {
