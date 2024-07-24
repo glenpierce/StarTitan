@@ -214,6 +214,9 @@ function playerAction(socketId, gameId, data) {
         return;
       } else {
         let map = game.map;
+        map.PlayerData.forEach(player => {
+          player.creditsPerTurn = 0;
+        })
         for (let i = 0; i < map.MAP.length; i++) {
           if (map.MAP[i].type == "star") {
             let industry = parseInt(map.MAP[i].industry, 10);
@@ -221,7 +224,8 @@ function playerAction(socketId, gameId, data) {
             let owner = parseInt(map.MAP[i].owner);
             let manufacturingTech = getManufacturingTech(game, owner);
             map.MAP[i].ships = ships + industry * manufacturingTech;
-            map.PlayerData[owner].credits = parseInt(map.MAP[i].economy) + parseInt(map.PlayerData[owner].credits);
+            map.PlayerData[owner].credits += parseInt(map.MAP[i].economy);
+            map.PlayerData[owner].creditsPerTurn += parseInt(map.MAP[i].economy);
             if(isNaN(map.PlayerData[owner].researchPoints))
               map.PlayerData[owner].researchPoints = "0";
             map.PlayerData[owner].researchPoints = parseInt(map.MAP[i].science) + parseInt(map.PlayerData[owner].researchPoints);

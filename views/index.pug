@@ -11,7 +11,7 @@ html
             div(style="display: flex; padding: 8px;")
                 div(style="padding-right: 4px;") Credits
                 div(id="creditsValue")
-                    div(id="creditsPerTurn")
+                div(id="creditsPerTurn" style="margin-left: auto;")
             div(style="display: flex; padding: 8px;"  onclick="setResearchTarget('weapons')" class="clickable")
                 div(style="padding-right: 4px;") Weapons
                 div(id="weaponsValue")
@@ -447,7 +447,7 @@ script.
         domContext.drawImage(background, 0, 0, 1100, 650);
 
         document.getElementById("creditsValue").innerText = getThisPlayer().credits;
-        // document.getElementById("creditsPerTurn").innerText = getThisPlayer().creditsPerTurn;
+        document.getElementById("creditsPerTurn").innerText = " Credit per turn: " + getThisPlayer().creditsPerTurn;
         document.getElementById("weaponsValue").innerText = getThisPlayer().weapons;
         document.getElementById("weaponsProgress").value = getThisPlayer().weaponsProgress ? getThisPlayer().weaponsProgress : 0;
         document.getElementById("weaponsProgress").max = getThisPlayer().weapons * 10;
