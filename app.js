@@ -497,6 +497,11 @@ function playerAction(socketId, gameId, data) {
       y: order.order[0].y,
       owner: order.order[0].owner
     });
+    game.sockets.forEach((socket) => {
+      if(socket.id === socketId) {
+        socket.emit('state', JSON.stringify(game.map));
+      }
+    });
   }
 
   function incrementIndustryServer(socketId, game, order) {

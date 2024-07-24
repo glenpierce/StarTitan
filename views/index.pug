@@ -151,41 +151,7 @@ script.
                     selectionCount++;
                     drawShip(map.MAP[i].x, map.MAP[i].y, map.MAP[i].ships, map.MAP[i].destination, map.MAP[i].owner, true, domContext);
                 } else if(map.MAP[i].type == "star"  && map.MAP[i].owner == getThisPlayer().ordinal) {
-                    selectionCount++;
-                    let selectedStarName = document.createElement('input');
-                    selectedStarName.disabled = true;
-                    selectedStarName.type = "text";
-                    selectedStarName.value = map.MAP[i].id;
-                    let selectedStarEconomy = document.createElement('button');
-                    selectedStarEconomy.type = "button";
-                    selectedStarEconomy.innerHTML = map.MAP[i].economy;
-                    let selectedStarIndustry = document.createElement('button');
-                    selectedStarIndustry.type = "button";
-                    selectedStarIndustry.innerHTML = map.MAP[i].industry;
-                    let selectedStarScience = document.createElement('button');
-                    selectedStarScience.type = "button";
-                    selectedStarScience.innerHTML = map.MAP[i].science;
-                    let selectedStarShips = document.createElement('button');
-                    selectedStarShips.id = "selectedStarShips";
-                    selectedStarShips.type = "button";
-                    selectedStarShips.innerHTML = map.MAP[i].ships;
-
-                    let selectedStar = document.createElement('div');
-                    selectedStar.style.display = "flex";
-                    selectionPanel.appendChild(selectedStarName);
-                    selectedStar.appendChild(selectedStarEconomy);
-                    selectedStar.appendChild(selectedStarIndustry);
-                    selectedStar.appendChild(selectedStarScience);
-                    selectedStar.appendChild(selectedStarShips);
-                    selectionPanel.appendChild(selectedStar);
-                    selectedStarName.setAttribute("style","width:94px");
-
-                    selectedStarIndustry.addEventListener("click", function() {incrementIndustry(selectedStarName.value, selectedStarIndustry)});
-                    selectedStarScience.addEventListener("click", function() {incrementScience(selectedStarName.value, selectedStarScience)});
-                    selectedStarEconomy.addEventListener("click", function() {incrementEconomy(selectedStarName.value, selectedStarEconomy)});
-
-                    selectedStarShips.addEventListener("click", function() {openSelectShipCount(selectedStarName.value)});
-                    selectedStarShips.addEventListener("click", function() {openTransmitShipOrders(selectedStarName.value)});
+                    selectionCount = updateSelectionPanel(selectionCount, i);
                 }
             }
         }
@@ -262,7 +228,6 @@ script.
         }
         domCanvas.onmousemove = onMouseMove;
         function onMouseMove(mouseEvent) {
-            // clearMap(subcanvas, subCtx);
             for(let i = 0; i < map.MAP.length; i++) {
                 if(map.MAP[i].type == "star") {
                     if(Math.abs(map.MAP[i].x - mouseEvent.offsetX) < 20 && Math.abs(map.MAP[i].y - mouseEvent.offsetY + 80) < 20) {
@@ -279,8 +244,8 @@ script.
             }
         }
 
-        domCanvas.onclick = onClick2;
-        function onClick2(event) {
+        domCanvas.onclick = onClickForDestination;
+        function onClickForDestination(event) {
             let destinationStarName = "";
             let numberOfShips = shipsToSend;
             shipsToSend = 0;
@@ -315,6 +280,55 @@ script.
             owner: owner
         });
         socket.emit('playerAction', gameId, JSON.stringify(order));
+    }
+
+    function updateSelectionPanel(selectionCount, i) {
+        selectionCount++;
+        let selectedStarName = document.createElement('input');
+        selectedStarName.disabled = true;
+        selectedStarName.type = "text";
+        selectedStarName.value = map.MAP[i].id;
+        let selectedStarEconomy = document.createElement('button');
+        selectedStarEconomy.type = "button";
+        selectedStarEconomy.innerHTML = map.MAP[i].economy;
+        let selectedStarIndustry = document.createElement('button');
+        selectedStarIndustry.type = "button";
+        selectedStarIndustry.innerHTML = map.MAP[i].industry;
+        let selectedStarScience = document.createElement('button');
+        selectedStarScience.type = "button";
+        selectedStarScience.innerHTML = map.MAP[i].science;
+        let selectedStarShips = document.createElement('button');
+        selectedStarShips.id = "selectedStarShips";
+        selectedStarShips.type = "button";
+        selectedStarShips.innerHTML = map.MAP[i].ships;
+
+        let selectedStar = document.createElement('div');
+        selectedStar.style.display = "flex";
+        selectionPanel.appendChild(selectedStarName);
+        selectedStar.appendChild(selectedStarEconomy);
+        selectedStar.appendChild(selectedStarIndustry);
+        selectedStar.appendChild(selectedStarScience);
+        selectedStar.appendChild(selectedStarShips);
+        selectionPanel.appendChild(selectedStar);
+        selectedStarName.setAttribute("style", "width:94px");
+
+        selectedStarIndustry.addEventListener("click", function () {
+            incrementIndustry(selectedStarName.value, selectedStarIndustry)
+        });
+        selectedStarScience.addEventListener("click", function () {
+            incrementScience(selectedStarName.value, selectedStarScience)
+        });
+        selectedStarEconomy.addEventListener("click", function () {
+            incrementEconomy(selectedStarName.value, selectedStarEconomy)
+        });
+
+        selectedStarShips.addEventListener("click", function () {
+            openSelectShipCount(selectedStarName.value)
+        });
+        selectedStarShips.addEventListener("click", function () {
+            openTransmitShipOrders(selectedStarName.value)
+        });
+        return selectionCount;
     }
 
     function incrementIndustry(starName, selectedStarIndustry) {
